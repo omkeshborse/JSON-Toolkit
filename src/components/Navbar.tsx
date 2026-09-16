@@ -66,16 +66,6 @@ export const Navbar: React.FC = () => {
           })}
         </nav>
 
-        {/* Action Button */}
-        <div className="hidden sm:flex items-center gap-3">
-          <Link
-            to="/json-formatter"
-            className="px-3.5 py-1.5 rounded-md text-xs font-medium bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-slate-950 font-semibold transition-colors shadow-sm"
-          >
-            Open Formatter
-          </Link>
-        </div>
-
         {/* Mobile menu button */}
         <div className="flex lg:hidden">
           <button
@@ -113,16 +103,6 @@ export const Navbar: React.FC = () => {
                 </Link>
               );
             })}
-          </div>
-
-          <div className="pt-2 border-t border-[#1A202C] flex items-center justify-end">
-            <Link
-              to="/json-formatter"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2 text-xs font-semibold rounded bg-[#38BDF8] text-slate-950"
-            >
-              Open Formatter
-            </Link>
           </div>
         </div>
       )}
