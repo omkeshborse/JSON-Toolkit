@@ -1,0 +1,6 @@
+{
+  "name": "JSON Toolkit",
+  "description": "Comprehensive client-side JSON developer toolkit for formatting, validating, inspecting, minifying, comparing, and querying JSON documents. 100% private.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
