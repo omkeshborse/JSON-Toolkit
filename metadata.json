@@ -1,6 +1,6 @@
 {
   "name": "JSON Toolkit",
-  "description": "Comprehensive client-side JSON developer toolkit for formatting, validating, inspecting, minifying, comparing, and querying JSON documents. 100% private.",
+  "description": "Free online JSON formatter, validator, beautifier and viewer. Format, validate and analyze JSON instantly in your browser.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

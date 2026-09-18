@@ -40,7 +40,7 @@ function AppContent() {
       : 'Free JSON Formatter & Validator Online | 101 JSON Toolkit';
     const pageDescription = seoItem
       ? seoItem.metaDescription
-      : 'Comprehensive client-side JSON developer toolkit for formatting, validating, inspecting, minifying, comparing, and querying JSON documents. 100% private.';
+      : 'Free online JSON formatter, validator, beautifier and viewer. Format, validate and analyze JSON instantly in your browser.';
 
     document.title = pageTitle;
 
@@ -67,14 +67,15 @@ function AppContent() {
       ogUrl.setAttribute('content', currentUrl);
     }
 
-    // Update or Insert Canonical Link
+    // Update or Insert Canonical Link (Always using the authoritative domain)
+    const canonicalUrl = `https://101jsontoolkit.netlify.app${path === '/' ? '/' : path}`;
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     if (!canonicalLink) {
       canonicalLink = document.createElement('link');
       canonicalLink.setAttribute('rel', 'canonical');
       document.head.appendChild(canonicalLink);
     }
-    canonicalLink.setAttribute('href', currentUrl);
+    canonicalLink.setAttribute('href', canonicalUrl);
   }, [path]);
 
   // Route Dispatcher
