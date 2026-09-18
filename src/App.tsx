@@ -37,7 +37,7 @@ function AppContent() {
     const seoItem = SEO_DATA_BY_PATH[path];
     const pageTitle = seoItem
       ? seoItem.metaTitle
-      : 'JSON Toolkit — Client-Side Developer Utilities for JSON';
+      : 'Free JSON Formatter & Validator Online | 101 JSON Toolkit';
     const pageDescription = seoItem
       ? seoItem.metaDescription
       : 'Comprehensive client-side JSON developer toolkit for formatting, validating, inspecting, minifying, comparing, and querying JSON documents. 100% private.';
