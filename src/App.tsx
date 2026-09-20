@@ -60,13 +60,6 @@ function AppContent() {
       ogDescription.setAttribute('content', pageDescription);
     }
 
-    // Update OpenGraph URL
-    const ogUrl = document.querySelector('meta[property="og:url"]');
-    const currentUrl = window.location.origin + path;
-    if (ogUrl) {
-      ogUrl.setAttribute('content', currentUrl);
-    }
-
     // Update or Insert Canonical Link (Always using the authoritative domain)
     const canonicalUrl = `https://101jsontoolkit.netlify.app${path === '/' ? '/' : path}`;
     let canonicalLink = document.querySelector('link[rel="canonical"]');
@@ -76,6 +69,63 @@ function AppContent() {
       document.head.appendChild(canonicalLink);
     }
     canonicalLink.setAttribute('href', canonicalUrl);
+
+    // Update or Insert OpenGraph URL
+    let ogUrl = document.querySelector('meta[property="og:url"]');
+    if (!ogUrl) {
+      ogUrl = document.createElement('meta');
+      ogUrl.setAttribute('property', 'og:url');
+      document.head.appendChild(ogUrl);
+    }
+    ogUrl.setAttribute('content', canonicalUrl);
+
+    // Update or Insert Schema.org JSON-LD Structured Data
+    let schemaScript = document.getElementById('schema-ld-json');
+    if (!schemaScript) {
+      schemaScript = document.createElement('script');
+      schemaScript.id = 'schema-ld-json';
+      schemaScript.setAttribute('type', 'application/ld+json');
+      document.head.appendChild(schemaScript);
+    }
+
+    const structuredData: {
+      '@context': string;
+      '@graph': Array<Record<string, unknown>>;
+    } = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebApplication',
+          name: seoItem ? `${seoItem.toolName} | 101 JSON Toolkit` : '101 JSON Toolkit',
+          url: canonicalUrl,
+          description: pageDescription,
+          applicationCategory: 'DeveloperApplication',
+          operatingSystem: 'All',
+          browserRequirements: 'Requires JavaScript. Requires HTML5.',
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'USD',
+          },
+        },
+      ],
+    };
+
+    if (seoItem?.faqs?.items && seoItem.faqs.items.length > 0) {
+      structuredData['@graph'].push({
+        '@type': 'FAQPage',
+        mainEntity: seoItem.faqs.items.map((faq) => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faq.answer,
+          },
+        })),
+      });
+    }
+
+    schemaScript.textContent = JSON.stringify(structuredData);
   }, [path]);
 
   // Route Dispatcher

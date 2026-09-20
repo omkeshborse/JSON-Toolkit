@@ -118,7 +118,7 @@ export const LandingPage: React.FC = () => {
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.15]">
-                The All-in-One Toolkit for Working with <span className="text-[#38BDF8]">JSON</span>
+                Free Online <span className="text-[#38BDF8]">JSON Formatter</span> & Validator
               </h1>
 
               <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl">
