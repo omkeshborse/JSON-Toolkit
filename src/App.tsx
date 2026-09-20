@@ -14,6 +14,7 @@ import { JsonMinifierPage } from './pages/JsonMinifierPage';
 import { JsonComparePage } from './pages/JsonComparePage';
 import { JsonPathPage } from './pages/JsonPathPage';
 import { JsonSchemaPage } from './pages/JsonSchemaPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { SEO_DATA_BY_PATH } from './data/seoContent';
 
 function AppContent() {
@@ -37,10 +38,14 @@ function AppContent() {
     const seoItem = SEO_DATA_BY_PATH[path];
     const pageTitle = seoItem
       ? seoItem.metaTitle
-      : 'Free JSON Formatter & Validator Online | 101 JSON Toolkit';
+      : path === '/'
+      ? 'Free JSON Formatter & Validator Online | 101 JSON Toolkit'
+      : '404 - Page Not Found | 101 JSON Toolkit';
     const pageDescription = seoItem
       ? seoItem.metaDescription
-      : 'Free online JSON formatter, validator, beautifier and viewer. Format, validate and analyze JSON instantly in your browser.';
+      : path === '/'
+      ? 'Free online JSON formatter, validator, beautifier and viewer. Format, validate and analyze JSON instantly in your browser.'
+      : 'The page you requested could not be found. Explore our developer tools including JSON Formatter, Validator, Viewer, and Schema utilities.';
 
     document.title = pageTitle;
 
@@ -125,6 +130,26 @@ function AppContent() {
       });
     }
 
+    if (seoItem && path !== '/') {
+      structuredData['@graph'].push({
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: 'https://101jsontoolkit.netlify.app/',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: seoItem.toolName,
+            item: canonicalUrl,
+          },
+        ],
+      });
+    }
+
     schemaScript.textContent = JSON.stringify(structuredData);
   }, [path]);
 
@@ -148,7 +173,7 @@ function AppContent() {
       case '/json-schema':
         return <JsonSchemaPage onShowToast={addToast} />;
       default:
-        return <LandingPage />;
+        return <NotFoundPage />;
     }
   };
 
