@@ -1,7 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ToolHeader } from '../components/ToolHeader';
-import { CodeEditor } from '../components/CodeEditor';
+import { CodeEditor, CodeEditorHandle } from '../components/CodeEditor';
+import { SmartFixBanner } from '../components/SmartFixBanner';
+import { ContextualDiagnosticPanel } from '../components/ContextualDiagnosticPanel';
+import { FixInspectorModal } from '../components/FixInspectorModal';
 import { SeoContentSection } from '../components/SeoContentSection';
 import { SEO_DATA_BY_PATH } from '../data/seoContent';
 import { SAMPLE_DATASETS } from '../data/samples';
@@ -12,22 +15,73 @@ import {
   Trash2,
   Copy,
   Info,
-  Layers,
-  FileCode,
+  Sparkles,
+  SlidersHorizontal,
 } from 'lucide-react';
+import { analyzeJsonErrors } from '../utils/jsonEngine/errorAnalyzer';
+import { evaluateAndRepair } from '../utils/jsonEngine/repairValidator';
+import { buildProposedFixItems } from '../utils/jsonEngine/fixInspector';
+import { buildContextualDiagnostic } from '../utils/jsonEngine/contextualDiagnostics';
 
-const INVALID_SAMPLE = `{
-  "title": "Invalid Sample Payload",
-  "missingTrailingQuote: "Value without closing quote,
-  "trailingComma": true,
+const COMPLEX_INVALID_SAMPLE = `// Sample payload with common real-world JSON syntax errors
+{
+  name: '101 JSON Toolkit',
+  version: 1.0,
+  isActive: True,
+  author: None,
+  features: [
+    'Syntax Error Detection',
+    'Deterministic Smart Fix',
+    'Schema Validation',
+  ],
+  /* Configuration options */
+  settings: {
+    theme: 'dark',
+    autoFormat: False,
+  },
 }`;
 
 export const JsonValidatorPage: React.FC<{ onShowToast: (msg: string, type?: 'success' | 'error' | 'info') => void }> = ({
   onShowToast,
 }) => {
   const [jsonText, setJsonText] = useState<string>('');
+  const [undoText, setUndoText] = useState<string | null>(null);
+  const [isInspectorOpen, setIsInspectorOpen] = useState<boolean>(false);
+  const editorRef = useRef<CodeEditorHandle>(null);
 
-  // Parse state & diagnostics
+  // 1. Comprehensive multi-error diagnostics from engine
+  const diagnostics = useMemo(() => {
+    return analyzeJsonErrors(jsonText);
+  }, [jsonText]);
+
+  // 2. Deterministic smart fix candidate calculation
+  const candidate = useMemo(() => {
+    if (!jsonText.trim()) return null;
+    return evaluateAndRepair(jsonText);
+  }, [jsonText]);
+
+  // 3. Proposed fix items for contextual actions
+  const proposedFixes = useMemo(() => {
+    if (!jsonText.trim() || !candidate?.isValid || candidate.confidence === 'low') {
+      return [];
+    }
+    return buildProposedFixItems(jsonText);
+  }, [jsonText, candidate]);
+
+  // 4. Contextual diagnostic models with code snippets and explanations
+  const contextualDiagnostics = useMemo(() => {
+    return diagnostics.map((d) =>
+      buildContextualDiagnostic(
+        d,
+        jsonText,
+        candidate?.confidence || 'high',
+        candidate?.confidenceScore || 0,
+        Boolean(candidate && candidate.isValid && candidate.confidence !== 'low')
+      )
+    );
+  }, [diagnostics, jsonText, candidate]);
+
+  // 5. Document statistics and native validation state
   const validationResult = useMemo(() => {
     const trimmed = jsonText.trim();
     if (!trimmed) {
@@ -37,7 +91,7 @@ export const JsonValidatorPage: React.FC<{ onShowToast: (msg: string, type?: 'su
     try {
       const parsed = JSON.parse(trimmed);
 
-      // Collect structural stats
+      // Collect structural statistics
       let nodeCount = 0;
       let maxDepth = 0;
 
@@ -56,7 +110,7 @@ export const JsonValidatorPage: React.FC<{ onShowToast: (msg: string, type?: 'su
       traverse(parsed, 1);
 
       return {
-        status: 'valid',
+        status: 'valid' as const,
         error: null,
         line: null,
         column: null,
@@ -68,57 +122,57 @@ export const JsonValidatorPage: React.FC<{ onShowToast: (msg: string, type?: 'su
         },
       };
     } catch (err: any) {
-      const msg = err?.message || 'Invalid JSON syntax';
-      let errLine: number | null = null;
-      let errCol: number | null = null;
-
-      // Extract line and column info from JS engine error
-      const match = msg.match(/line (\d+) column (\d+)/i) || msg.match(/position (\d+)/i);
-      if (match) {
-        if (match[2]) {
-          errLine = parseInt(match[1], 10);
-          errCol = parseInt(match[2], 10);
-        } else if (match[1]) {
-          const pos = parseInt(match[1], 10);
-          const lines = jsonText.slice(0, pos).split('\n');
-          errLine = lines.length;
-          errCol = lines[lines.length - 1].length + 1;
-        }
-      }
-
+      const firstDiag = diagnostics[0];
       return {
-        status: 'invalid',
-        error: msg,
-        line: errLine,
-        column: errCol,
+        status: 'invalid' as const,
+        error: err?.message || 'Invalid JSON syntax',
+        line: firstDiag ? firstDiag.line : null,
+        column: firstDiag ? firstDiag.column : null,
         stats: null,
       };
     }
-  }, [jsonText]);
+  }, [jsonText, diagnostics]);
 
   const handleValidate = () => {
     if (validationResult.status === 'valid') {
       onShowToast('Strict validation passed: Valid RFC 8259 JSON payload', 'success');
     } else if (validationResult.status === 'invalid') {
-      onShowToast(validationResult.error || 'Syntax error found in JSON document', 'error');
+      onShowToast(`${diagnostics.length} syntax error(s) detected. Check diagnostic report below.`, 'error');
     } else {
       onShowToast('Document is empty. Enter JSON to validate.', 'info');
     }
   };
 
+  const handleApplySmartFix = (fixedText: string) => {
+    setUndoText(jsonText);
+    setJsonText(fixedText);
+    onShowToast('Deterministic Smart Fix applied: Converted to valid RFC 8259 JSON', 'success');
+  };
+
+  const handleUndoFix = () => {
+    if (undoText !== null) {
+      setJsonText(undoText);
+      setUndoText(null);
+      onShowToast('Reverted to original JSON', 'info');
+    }
+  };
+
   const handleLoadValidSample = () => {
     setJsonText(JSON.stringify(SAMPLE_DATASETS[0].data, null, 2));
+    setUndoText(null);
     onShowToast('Loaded valid JSON sample', 'info');
   };
 
   const handleLoadInvalidSample = () => {
-    setJsonText(INVALID_SAMPLE);
-    onShowToast('Loaded invalid sample to test diagnostic reporting', 'info');
+    setJsonText(COMPLEX_INVALID_SAMPLE);
+    setUndoText(null);
+    onShowToast('Loaded sample with syntax errors', 'info');
   };
 
   const handleClear = () => {
     setJsonText('');
-    onShowToast('Cleared editor', 'info');
+    setUndoText(null);
+    onShowToast('Cleared editor content', 'info');
   };
 
   const handleCopy = () => {
@@ -126,30 +180,44 @@ export const JsonValidatorPage: React.FC<{ onShowToast: (msg: string, type?: 'su
     onShowToast('Copied JSON to clipboard', 'success');
   };
 
+  const handleJumpToLine = (line: number, column: number = 1) => {
+    if (editorRef.current) {
+      editorRef.current.scrollToLine(line, column);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col w-full">
       <Breadcrumb items={[{ label: 'JSON Validator' }]} />
 
       <ToolHeader
-        title="JSON Validator"
-        description="Verify JSON syntax strictly against RFC 8259 with exact line and column diagnostic locator."
-        icon={CheckCircle2}
-        badge="Syntax Engine"
+        title="JSON Validator & Repair Engine"
+        description="Analyze RFC 8259 compliance, inspect syntax errors with contextual diagnostics, and repair broken payloads with deterministic zero-hallucination rules."
+        badge="Syntax & Repair Engine"
         actions={
           <>
+            {candidate && candidate.isValid && candidate.confidence !== 'low' && candidate.changes.length > 0 && (
+              <button
+                onClick={() => setIsInspectorOpen(true)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#161C28] hover:bg-[#1E2638] text-[#38BDF8] border border-[#262D3D] flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                <span>Inspect Fixes</span>
+              </button>
+            )}
             <button
               onClick={handleLoadValidSample}
               className="px-2.5 py-1.5 rounded-md text-xs font-medium bg-[#121620] hover:bg-[#1A202C] text-slate-300 border border-[#262D3D] flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
               <span>Valid Sample</span>
             </button>
             <button
               onClick={handleLoadInvalidSample}
-              className="px-2.5 py-1.5 rounded-md text-xs font-medium bg-[#121620] hover:bg-[#1A202C] text-[#F43F5E] border border-[#262D3D] flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-2.5 py-1.5 rounded-md text-xs font-medium bg-[#121620] hover:bg-[#1A202C] text-slate-300 border border-[#262D3D] flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <AlertCircle className="w-3.5 h-3.5" />
-              <span>Invalid Sample</span>
+              <AlertCircle className="w-3.5 h-3.5 text-[#F43F5E]" />
+              <span>Error Sample</span>
             </button>
             <button
               onClick={handleClear}
@@ -161,6 +229,37 @@ export const JsonValidatorPage: React.FC<{ onShowToast: (msg: string, type?: 'su
           </>
         }
       />
+
+      {/* Smart Fix Banner when errors detected */}
+      {validationResult.status === 'invalid' && (
+        <div className="mb-4">
+          <SmartFixBanner
+            diagnostics={diagnostics}
+            candidate={candidate}
+            rawInput={jsonText}
+            onApplyFix={handleApplySmartFix}
+            onUndoFix={handleUndoFix}
+            canUndo={undoText !== null}
+          />
+        </div>
+      )}
+
+      {/* Undo Banner if currently fixed */}
+      {validationResult.status === 'valid' && undoText !== null && (
+        <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs text-emerald-300">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <span>Deterministic Smart Fix active. Your document is now 100% valid RFC 8259 JSON.</span>
+          </div>
+          <button
+            onClick={handleUndoFix}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/40 font-medium transition cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Undo Fix</span>
+          </button>
+        </div>
+      )}
 
       {/* Validation Result Banner */}
       <div className="mb-4">
@@ -178,7 +277,7 @@ export const JsonValidatorPage: React.FC<{ onShowToast: (msg: string, type?: 'su
                   </span>
                 </h3>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  The document contains valid grammar and can be parsed by any standard JSON parser.
+                  The document conforms to standard grammar and can be parsed by any strict JSON parser.
                 </p>
               </div>
             </div>
@@ -203,31 +302,16 @@ export const JsonValidatorPage: React.FC<{ onShowToast: (msg: string, type?: 'su
         )}
 
         {validationResult.status === 'invalid' && (
-          <div className="p-4 rounded-xl bg-[#F43F5E]/10 border border-[#F43F5E]/30 text-white">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[#F43F5E]/20 flex items-center justify-center text-[#F43F5E] shrink-0 mt-0.5">
-                <AlertCircle className="w-5 h-5" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-[#F43F5E]">
-                    Invalid JSON Syntax Detected
-                  </h3>
-                  {validationResult.line && (
-                    <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#F43F5E]/20 text-[#F43F5E] border border-[#F43F5E]/40 font-medium">
-                      Line {validationResult.line}, Column {validationResult.column}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-slate-300 font-mono mt-2 p-2.5 rounded bg-[#0B0D13]/80 border border-[#F43F5E]/20">
-                  {validationResult.error}
-                </p>
-                <div className="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
-                  <Info className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Common causes include trailing commas, unescaped quotes, or mismatched braces.</span>
-                </div>
-              </div>
-            </div>
+          <div className="space-y-4">
+            {/* Contextual Diagnostics Panel */}
+            <ContextualDiagnosticPanel
+              diagnostics={contextualDiagnostics}
+              proposedFixes={proposedFixes}
+              onSelectLine={handleJumpToLine}
+              onOpenInspector={() => setIsInspectorOpen(true)}
+              onApplyQuickFix={handleApplySmartFix}
+              repairedText={candidate?.repaired}
+            />
           </div>
         )}
 
@@ -266,14 +350,41 @@ export const JsonValidatorPage: React.FC<{ onShowToast: (msg: string, type?: 'su
 
         <div className="flex-1 min-h-[420px]">
           <CodeEditor
+            ref={editorRef}
             title="Source Payload"
             value={jsonText}
-            onChange={setJsonText}
+            onChange={(val) => {
+              setJsonText(val);
+              if (undoText !== null) setUndoText(null);
+            }}
             placeholder="Paste JSON document to validate..."
             error={validationResult.error}
+            errorLine={validationResult.line}
+            diagnostics={diagnostics}
+            onGutterClick={handleJumpToLine}
+            canSmartFix={Boolean(
+              candidate &&
+              candidate.isValid &&
+              candidate.confidence !== 'low' &&
+              candidate.changes.length > 0
+            )}
+            onSmartFix={() => candidate && handleApplySmartFix(candidate.repaired)}
           />
         </div>
       </div>
+
+      {/* Inspector Modal */}
+      {isInspectorOpen && (
+        <FixInspectorModal
+          isOpen={isInspectorOpen}
+          onClose={() => setIsInspectorOpen(false)}
+          originalText={jsonText}
+          onApplyFix={(fixed) => {
+            handleApplySmartFix(fixed);
+            setIsInspectorOpen(false);
+          }}
+        />
+      )}
 
       <SeoContentSection content={SEO_DATA_BY_PATH['/json-validator']} />
     </div>

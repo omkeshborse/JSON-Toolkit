@@ -2,9 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ToolHeader } from '../components/ToolHeader';
 import { CodeEditor } from '../components/CodeEditor';
+import { SmartFixBanner } from '../components/SmartFixBanner';
 import { SeoContentSection } from '../components/SeoContentSection';
 import { SEO_DATA_BY_PATH } from '../data/seoContent';
 import { SAMPLE_DATASETS } from '../data/samples';
+import { JsonEngine } from '../utils/jsonEngine';
 import {
   Minimize2,
   Copy,
@@ -15,6 +17,7 @@ import {
   TrendingDown,
   FileCode,
   HardDrive,
+  Sparkles,
 } from 'lucide-react';
 
 export const JsonMinifierPage: React.FC<{ onShowToast: (msg: string, type?: 'success' | 'error' | 'info') => void }> = ({
@@ -22,18 +25,14 @@ export const JsonMinifierPage: React.FC<{ onShowToast: (msg: string, type?: 'suc
 }) => {
   const [inputJson, setInputJson] = useState<string>('');
   const [minifiedJson, setMinifiedJson] = useState<string>('');
+  const [undoInput, setUndoInput] = useState<string | null>(null);
 
-  const { parsed, isValid, error } = useMemo(() => {
-    if (!inputJson.trim()) {
-      return { parsed: null, isValid: false, error: null };
-    }
-    try {
-      const p = JSON.parse(inputJson);
-      return { parsed: p, isValid: true, error: null };
-    } catch (err: any) {
-      return { parsed: null, isValid: false, error: err?.message || 'Invalid JSON syntax' };
-    }
+  // Validate using shared JsonEngine
+  const validation = useMemo(() => {
+    return JsonEngine.validate(inputJson);
   }, [inputJson]);
+
+  const { isValid, data: parsed, error, line, diagnostics, candidate } = validation;
 
   // Compression metrics
   const originalBytes = new Blob([inputJson]).size;
@@ -43,13 +42,42 @@ export const JsonMinifierPage: React.FC<{ onShowToast: (msg: string, type?: 'suc
   const originalLines = inputJson ? inputJson.split('\n').length : 0;
 
   const handleMinify = () => {
-    if (!isValid || parsed === null) {
-      onShowToast('Cannot minify invalid JSON', 'error');
+    if (!inputJson.trim()) {
+      onShowToast('Please provide JSON to minify', 'info');
       return;
     }
-    const result = JSON.stringify(parsed);
-    setMinifiedJson(result);
-    onShowToast(`Minified JSON — saved ${percentSaved}% (${bytesSaved} bytes)`, 'success');
+    if (!isValid || parsed === null) {
+      onShowToast('Cannot minify invalid JSON. Use Smart Fix to repair syntax.', 'error');
+      return;
+    }
+    try {
+      const result = JsonEngine.minify(inputJson);
+      setMinifiedJson(result);
+      onShowToast(`Minified JSON — saved ${percentSaved}% (${bytesSaved} bytes)`, 'success');
+    } catch {
+      onShowToast('Failed to minify JSON', 'error');
+    }
+  };
+
+  const handleApplySmartFix = (fixedText: string) => {
+    setUndoInput(inputJson);
+    setInputJson(fixedText);
+    try {
+      const min = JsonEngine.minify(fixedText);
+      setMinifiedJson(min);
+    } catch {
+      // leave minified as is
+    }
+    onShowToast('Deterministic Smart Fix applied: Converted to valid RFC 8259 JSON', 'success');
+  };
+
+  const handleUndoFix = () => {
+    if (undoInput !== null) {
+      setInputJson(undoInput);
+      setUndoInput(null);
+      setMinifiedJson('');
+      onShowToast('Reverted to original JSON', 'info');
+    }
   };
 
   const handleCopy = () => {
@@ -64,23 +92,25 @@ export const JsonMinifierPage: React.FC<{ onShowToast: (msg: string, type?: 'suc
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'payload.min.json';
+    a.download = 'minified.json';
     a.click();
     URL.revokeObjectURL(url);
-    onShowToast('Downloaded payload.min.json', 'success');
+    onShowToast('Downloaded minified.json', 'success');
   };
 
   const handleResetSample = () => {
     const s = JSON.stringify(SAMPLE_DATASETS[0].data, null, 2);
     setInputJson(s);
-    setMinifiedJson(JSON.stringify(SAMPLE_DATASETS[0].data));
-    onShowToast('Loaded sample dataset', 'info');
+    setMinifiedJson('');
+    setUndoInput(null);
+    onShowToast('Loaded sample JSON', 'info');
   };
 
   const handleClear = () => {
     setInputJson('');
     setMinifiedJson('');
-    onShowToast('Cleared editors', 'info');
+    setUndoInput(null);
+    onShowToast('Cleared input and output', 'info');
   };
 
   return (
@@ -88,10 +118,9 @@ export const JsonMinifierPage: React.FC<{ onShowToast: (msg: string, type?: 'suc
       <Breadcrumb items={[{ label: 'JSON Minifier' }]} />
 
       <ToolHeader
-        title="JSON Minifier"
-        description="Strip whitespace, newlines, and indentations to compress JSON payloads for minimal network payload size."
-        icon={Minimize2}
-        badge="Compressor"
+        title="JSON Minifier & Compressor"
+        description="Remove unnecessary whitespace, newlines, and indentation from JSON documents to reduce payload size and optimize network transmission."
+        badge="Zero-Loss Compression"
         actions={
           <>
             <button
@@ -99,7 +128,7 @@ export const JsonMinifierPage: React.FC<{ onShowToast: (msg: string, type?: 'suc
               className="px-2.5 py-1.5 rounded-md text-xs font-medium bg-[#121620] hover:bg-[#1A202C] text-slate-300 border border-[#262D3D] flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Load Sample</span>
+              <span>Sample</span>
             </button>
             <button
               onClick={handleClear}
@@ -112,95 +141,143 @@ export const JsonMinifierPage: React.FC<{ onShowToast: (msg: string, type?: 'suc
         }
       />
 
-      {/* Compression Metrics Banner */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-        <div className="p-3.5 rounded-lg bg-[#121620] border border-[#1A202C]">
-          <span className="text-[11px] text-slate-400 block">Original Size</span>
-          <div className="text-lg font-bold text-white font-mono mt-0.5">
-            {originalBytes.toLocaleString()} <span className="text-xs text-slate-500 font-normal">B</span>
-          </div>
-          <span className="text-[10px] text-slate-500">{originalLines} lines</span>
+      {/* Smart Fix Banner when errors detected */}
+      {!isValid && inputJson.trim() && (
+        <div className="mb-4">
+          <SmartFixBanner
+            diagnostics={diagnostics}
+            candidate={candidate}
+            rawInput={inputJson}
+            onApplyFix={handleApplySmartFix}
+            onUndoFix={handleUndoFix}
+            canUndo={undoInput !== null}
+          />
         </div>
+      )}
 
-        <div className="p-3.5 rounded-lg bg-[#121620] border border-[#1A202C]">
-          <span className="text-[11px] text-slate-400 block">Minified Size</span>
-          <div className="text-lg font-bold text-[#34D399] font-mono mt-0.5">
-            {minifiedBytes.toLocaleString()} <span className="text-xs text-slate-500 font-normal">B</span>
+      {/* Undo Banner if currently fixed */}
+      {isValid && undoInput !== null && (
+        <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs text-emerald-300">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <span>Deterministic Smart Fix active. Document is valid RFC 8259 JSON.</span>
           </div>
-          <span className="text-[10px] text-slate-500">1 line (single string)</span>
+          <button
+            onClick={handleUndoFix}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/40 font-medium transition cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Undo Fix</span>
+          </button>
         </div>
+      )}
 
-        <div className="p-3.5 rounded-lg bg-[#121620] border border-[#1A202C]">
-          <span className="text-[11px] text-slate-400 block">Space Reduced</span>
-          <div className="text-lg font-bold text-[#38BDF8] font-mono mt-0.5">
-            {percentSaved}%
+      {/* Metric Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div className="p-3 bg-[#0F1117] border border-[#262D3D] rounded-xl flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[#38BDF8]/10 text-[#38BDF8] flex items-center justify-center">
+            <FileCode className="w-4 h-4" />
           </div>
-          <span className="text-[10px] text-slate-500">Saved {bytesSaved.toLocaleString()} bytes</span>
-        </div>
-
-        <div className="p-3.5 rounded-lg bg-[#121620] border border-[#1A202C] flex items-center justify-between">
           <div>
-            <span className="text-[11px] text-slate-400 block">Action</span>
-            <button
-              onClick={handleMinify}
-              disabled={!isValid}
-              className={`mt-1 px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
-                isValid
-                  ? 'bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-slate-950 shadow-sm'
-                  : 'bg-slate-800 text-slate-500 cursor-not-allowed'
-              }`}
-            >
-              <Zap className="w-3.5 h-3.5" />
-              <span>Minify Now</span>
-            </button>
+            <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Original Size</div>
+            <div className="text-sm font-semibold text-white">{originalBytes ? `${originalBytes.toLocaleString()} B` : '—'}</div>
           </div>
-          <div className="flex flex-col gap-1">
-            <button
-              onClick={handleCopy}
-              disabled={!minifiedJson}
-              className="p-1.5 rounded bg-[#1A202C] hover:bg-[#262D3D] text-slate-300 border border-[#262D3D] text-xs cursor-pointer disabled:opacity-50"
-              title="Copy minified"
-            >
-              <Copy className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={handleDownload}
-              disabled={!minifiedJson}
-              className="p-1.5 rounded bg-[#1A202C] hover:bg-[#262D3D] text-slate-300 border border-[#262D3D] text-xs cursor-pointer disabled:opacity-50"
-              title="Download file"
-            >
-              <Download className="w-3.5 h-3.5" />
-            </button>
+        </div>
+
+        <div className="p-3 bg-[#0F1117] border border-[#262D3D] rounded-xl flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[#34D399]/10 text-[#34D399] flex items-center justify-center">
+            <HardDrive className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Minified Size</div>
+            <div className="text-sm font-semibold text-white">{minifiedBytes ? `${minifiedBytes.toLocaleString()} B` : '—'}</div>
+          </div>
+        </div>
+
+        <div className="p-3 bg-[#0F1117] border border-[#262D3D] rounded-xl flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+            <TrendingDown className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Savings</div>
+            <div className="text-sm font-semibold text-white">{bytesSaved > 0 ? `${percentSaved}%` : '0%'}</div>
+          </div>
+        </div>
+
+        <div className="p-3 bg-[#0F1117] border border-[#262D3D] rounded-xl flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+            <Zap className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Lines Collapsed</div>
+            <div className="text-sm font-semibold text-white">{originalLines > 1 ? originalLines - 1 : 0}</div>
           </div>
         </div>
       </div>
 
-      {/* Editors */}
+      {/* Editor & Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1">
-        <div className="flex flex-col min-h-[440px]">
+        {/* Input */}
+        <div className="flex flex-col">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs text-slate-400 font-medium">Input JSON</span>
+            <button
+              onClick={handleMinify}
+              disabled={!isValid}
+              className={`px-3 py-1 text-xs font-semibold rounded flex items-center gap-1.5 transition-colors cursor-pointer ${
+                isValid
+                  ? 'bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-slate-950 shadow-sm'
+                  : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+              }`}
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
+              <span>Minify Now</span>
+            </button>
+          </div>
           <CodeEditor
-            title="Source JSON"
+            title="Formatted Input"
             value={inputJson}
             onChange={(val) => {
               setInputJson(val);
-              try {
-                const p = JSON.parse(val);
-                setMinifiedJson(JSON.stringify(p));
-              } catch {
-                // leave minified as is while editing
-              }
+              if (undoInput !== null) setUndoInput(null);
             }}
-            placeholder="Paste formatted JSON..."
+            placeholder="Paste raw JSON here to minify..."
             error={error}
+            errorLine={line}
+            diagnostics={diagnostics}
+            canSmartFix={Boolean(candidate && candidate.isValid && candidate.confidence !== 'low')}
+            onSmartFix={() => candidate && handleApplySmartFix(candidate.repaired)}
           />
         </div>
 
-        <div className="flex flex-col min-h-[440px]">
+        {/* Output */}
+        <div className="flex flex-col">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs text-slate-400 font-medium">Minified JSON Output</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopy}
+                disabled={!minifiedJson}
+                className="px-2.5 py-1 text-xs font-medium rounded bg-[#121620] hover:bg-[#1A202C] text-slate-300 border border-[#262D3D] flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy</span>
+              </button>
+              <button
+                onClick={handleDownload}
+                disabled={!minifiedJson}
+                className="px-2.5 py-1 text-xs font-medium rounded bg-[#121620] hover:bg-[#1A202C] text-slate-300 border border-[#262D3D] flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download</span>
+              </button>
+            </div>
+          </div>
           <CodeEditor
-            title="Minified Single-Line Result"
+            title="Compact Representation"
             value={minifiedJson}
-            readOnly={false}
             onChange={setMinifiedJson}
+            readOnly
             placeholder="Minified single-line JSON will appear here..."
           />
         </div>

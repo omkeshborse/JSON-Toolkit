@@ -2,9 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ToolHeader } from '../components/ToolHeader';
 import { CodeEditor } from '../components/CodeEditor';
+import { SmartFixBanner } from '../components/SmartFixBanner';
 import { SeoContentSection } from '../components/SeoContentSection';
 import { SEO_DATA_BY_PATH } from '../data/seoContent';
 import { SAMPLE_DATASETS } from '../data/samples';
+import { JsonEngine } from '../utils/jsonEngine';
 import {
   Braces,
   CheckCircle2,
@@ -16,6 +18,7 @@ import {
   Sparkles,
   Minimize2,
   Sliders,
+  Wand2,
 } from 'lucide-react';
 
 export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'success' | 'error' | 'info') => void }> = ({
@@ -24,45 +27,56 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
   const [inputJson, setInputJson] = useState<string>('');
   const [outputJson, setOutputJson] = useState<string>('');
   const [indentation, setIndentation] = useState<number | 'tab'>(2);
+  const [undoInput, setUndoInput] = useState<string | null>(null);
 
-  // Parse state & diagnostics
-  const { parsed, isValid, error, line, column } = useMemo(() => {
-    if (!inputJson.trim()) {
-      return { parsed: null, isValid: null, error: null, line: null, column: null };
-    }
-    try {
-      const p = JSON.parse(inputJson);
-      return { parsed: p, isValid: true, error: null, line: null, column: null };
-    } catch (err: any) {
-      const msg = err?.message || 'Invalid JSON syntax';
-      let errLine: number | null = null;
-      let errCol: number | null = null;
-      const match = msg.match(/line (\d+) column (\d+)/i) || msg.match(/position (\d+)/i);
-      if (match) {
-        if (match[2]) {
-          errLine = parseInt(match[1], 10);
-          errCol = parseInt(match[2], 10);
-        } else if (match[1]) {
-          const pos = parseInt(match[1], 10);
-          const lines = inputJson.slice(0, pos).split('\n');
-          errLine = lines.length;
-          errCol = lines[lines.length - 1].length + 1;
-        }
-      }
-      return { parsed: null, isValid: false, error: msg, line: errLine, column: errCol };
-    }
+  // Unified validation via shared JsonEngine
+  const validation = useMemo(() => {
+    return JsonEngine.validate(inputJson);
   }, [inputJson]);
 
-  // Format Action
+  const { isValid, data: parsed, error, line, column, diagnostics, candidate } = validation;
+
+  // Format Action — strictly requires valid JSON, does not auto-mutate invalid input
   const handleFormat = () => {
-    if (!isValid || parsed === null) {
-      onShowToast('Cannot format invalid JSON. Please resolve syntax errors.', 'error');
+    if (!inputJson.trim()) {
+      onShowToast('Please provide JSON to format', 'info');
       return;
     }
+    if (!isValid || parsed === null) {
+      onShowToast('Cannot format invalid JSON. Use Quick Fix or Inspect Fixes to resolve syntax errors.', 'error');
+      return;
+    }
+    try {
+      const indent = indentation === 'tab' ? '\t' : indentation;
+      const formatted = JsonEngine.format(inputJson, { indent });
+      setOutputJson(formatted);
+      onShowToast(`Formatted JSON (${indentation === 'tab' ? 'Tabs' : `${indentation} spaces`})`, 'success');
+    } catch {
+      onShowToast('Cannot format invalid JSON', 'error');
+    }
+  };
+
+  // Smart Fix Action triggered explicitly by user
+  const handleApplySmartFix = (fixedText: string) => {
+    setUndoInput(inputJson);
+    setInputJson(fixedText);
+
     const indent = indentation === 'tab' ? '\t' : indentation;
-    const formatted = JSON.stringify(parsed, null, indent);
-    setOutputJson(formatted);
-    onShowToast(`Formatted JSON (${indentation === 'tab' ? 'Tabs' : `${indentation} spaces`})`, 'success');
+    try {
+      const formatted = JsonEngine.format(fixedText, { indent });
+      setOutputJson(formatted);
+    } catch {
+      setOutputJson(fixedText);
+    }
+    onShowToast('Deterministic Smart Fix applied & formatted successfully!', 'success');
+  };
+
+  const handleUndoFix = () => {
+    if (undoInput !== null) {
+      setInputJson(undoInput);
+      setUndoInput(null);
+      onShowToast('Reverted to original input', 'info');
+    }
   };
 
   // Minify Action
@@ -71,9 +85,13 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
       onShowToast('Cannot minify invalid JSON', 'error');
       return;
     }
-    const minified = JSON.stringify(parsed);
-    setOutputJson(minified);
-    onShowToast('Minified JSON to compact representation', 'success');
+    try {
+      const minified = JsonEngine.minify(inputJson);
+      setOutputJson(minified);
+      onShowToast('Minified JSON to compact representation', 'success');
+    } catch {
+      onShowToast('Cannot minify invalid JSON', 'error');
+    }
   };
 
   // Validate Action
@@ -85,7 +103,7 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
     if (isValid) {
       onShowToast('Valid JSON syntax conforming to RFC 8259', 'success');
     } else {
-      onShowToast(error || 'Syntax error detected in JSON', 'error');
+      onShowToast(error || `${diagnostics.length} syntax error(s) detected`, 'error');
     }
   };
 
@@ -93,7 +111,8 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
   const handleClear = () => {
     setInputJson('');
     setOutputJson('');
-    onShowToast('Cleared editors', 'info');
+    setUndoInput(null);
+    onShowToast('Cleared both input and output', 'info');
   };
 
   // Reset to sample
@@ -101,19 +120,26 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
     const s = JSON.stringify(SAMPLE_DATASETS[0].data, null, 2);
     setInputJson(s);
     setOutputJson(s);
+    setUndoInput(null);
     onShowToast('Loaded sample dataset', 'info');
   };
 
-  // Copy Output
-  const handleCopyOutput = () => {
-    if (!outputJson) return;
+  // Copy Action
+  const handleCopy = () => {
+    if (!outputJson) {
+      onShowToast('No formatted JSON to copy', 'error');
+      return;
+    }
     navigator.clipboard.writeText(outputJson);
     onShowToast('Copied formatted JSON to clipboard', 'success');
   };
 
-  // Export / Download Output
-  const handleExport = () => {
-    if (!outputJson) return;
+  // Download Action
+  const handleDownload = () => {
+    if (!outputJson) {
+      onShowToast('No formatted JSON to download', 'error');
+      return;
+    }
     const blob = new Blob([outputJson], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -121,23 +147,19 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
     a.download = 'formatted.json';
     a.click();
     URL.revokeObjectURL(url);
-    onShowToast('Exported JSON file to downloads', 'success');
+    onShowToast('Downloaded formatted.json', 'success');
   };
 
-  const inputSize = new Blob([inputJson]).size;
-  const outputSize = new Blob([outputJson]).size;
-  const inputLines = inputJson ? inputJson.split('\n').length : 0;
-  const outputLines = outputJson ? outputJson.split('\n').length : 0;
+  const canSmartFix = Boolean(candidate && candidate.isValid && candidate.confidence !== 'low');
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col w-full">
       <Breadcrumb items={[{ label: 'JSON Formatter' }]} />
 
       <ToolHeader
-        title="JSON Formatter"
-        description="Format, prettify, minify, and validate JSON payloads with configurable indentation."
-        icon={Braces}
-        badge="RFC 8259"
+        title="JSON Formatter & Beautifier"
+        description="Clean, indent, and format JSON code to improve readability and maintain compliance with RFC 8259 standards."
+        badge="Zero-Lag Parser"
         actions={
           <>
             <button
@@ -145,7 +167,7 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
               className="px-2.5 py-1.5 rounded-md text-xs font-medium bg-[#121620] hover:bg-[#1A202C] text-slate-300 border border-[#262D3D] flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Load Sample</span>
+              <span>Reset Sample</span>
             </button>
             <button
               onClick={handleClear}
@@ -158,98 +180,96 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
         }
       />
 
-      {/* Control Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-[#121620] border border-[#1A202C] mb-4">
+      {/* Control bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#121620] border border-[#1A202C] rounded-xl mb-4 text-xs">
         <div className="flex flex-wrap items-center gap-2">
-          {/* Format Button */}
+          {/* Main Action: Format */}
           <button
             onClick={handleFormat}
-            disabled={!isValid}
-            className={`px-3.5 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
-              isValid
-                ? 'bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-slate-950 shadow-sm'
-                : 'bg-slate-800 text-slate-500 cursor-not-allowed'
-            }`}
+            className="px-3.5 py-1.5 rounded-lg bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-slate-950 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Format</span>
+            <span>Format JSON</span>
           </button>
 
-          {/* Minify Button */}
+          {/* Minify Action */}
           <button
             onClick={handleMinify}
-            disabled={!isValid}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium border flex items-center gap-1.5 transition-colors cursor-pointer ${
-              isValid
-                ? 'bg-[#1A202C] hover:bg-[#262D3D] text-slate-200 border-[#262D3D]'
-                : 'bg-slate-900 text-slate-600 border-transparent cursor-not-allowed'
-            }`}
+            className="px-3 py-1.5 rounded-lg bg-[#1A202C] hover:bg-[#262D3D] text-slate-200 border border-[#262D3D] flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Minimize2 className="w-3.5 h-3.5" />
+            <Minimize2 className="w-3.5 h-3.5 text-slate-400" />
             <span>Minify</span>
           </button>
 
-          {/* Validate Button */}
+          {/* Validate Action */}
           <button
             onClick={handleValidate}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-[#1A202C] hover:bg-[#262D3D] text-slate-200 border border-[#262D3D] flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-lg bg-[#1A202C] hover:bg-[#262D3D] text-slate-200 border border-[#262D3D] flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
             <span>Validate</span>
           </button>
-
-          {/* Indentation Selector */}
-          <div className="flex items-center gap-1.5 ml-2 pl-3 border-l border-[#262D3D] text-xs text-slate-400">
-            <Sliders className="w-3.5 h-3.5" />
-            <span>Indent:</span>
-            <select
-              value={indentation}
-              onChange={(e) => {
-                const val = e.target.value;
-                setIndentation(val === 'tab' ? 'tab' : parseInt(val, 10));
-              }}
-              className="bg-[#0B0D13] text-slate-200 border border-[#262D3D] rounded px-2 py-1 text-xs focus:outline-none focus:border-[#38BDF8]"
-            >
-              <option value={2}>2 Spaces</option>
-              <option value={4}>4 Spaces</option>
-              <option value="tab">Tabs</option>
-            </select>
-          </div>
         </div>
 
-        {/* Export / Copy Actions */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleCopyOutput}
-            disabled={!outputJson}
-            className="px-2.5 py-1.5 rounded-md text-xs font-medium bg-[#1A202C] hover:bg-[#262D3D] text-slate-200 border border-[#262D3D] flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
-          >
-            <Copy className="w-3.5 h-3.5" />
-            <span>Copy Output</span>
-          </button>
-          <button
-            onClick={handleExport}
-            disabled={!outputJson}
-            className="px-2.5 py-1.5 rounded-md text-xs font-medium bg-[#1A202C] hover:bg-[#262D3D] text-slate-200 border border-[#262D3D] flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Download</span>
-          </button>
+        {/* Right side settings: Indentation selector */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-slate-400">
+            <Sliders className="w-3.5 h-3.5" />
+            <span>Indentation:</span>
+          </div>
+
+          <div className="flex items-center gap-1 bg-[#0B0D13] p-0.5 rounded-lg border border-[#262D3D]">
+            {([2, 4, 3, 'tab'] as const).map((indent) => (
+              <button
+                key={indent}
+                onClick={() => {
+                  setIndentation(indent);
+                  if (parsed !== null) {
+                    const formattedIndent = indent === 'tab' ? '\t' : indent;
+                    setOutputJson(JSON.stringify(parsed, null, formattedIndent));
+                  }
+                }}
+                className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors cursor-pointer ${
+                  indentation === indent
+                    ? 'bg-[#121620] text-white font-semibold shadow-xs'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {indent === 'tab' ? 'Tabs' : `${indent}s`}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Diagnostics Banner if error exists */}
-      {!isValid && error && (
-        <div className="mb-4 p-3 rounded-lg bg-[#F43F5E]/10 border border-[#F43F5E]/30 text-xs flex items-start gap-2 text-[#F43F5E]">
-          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <span className="font-semibold">JSON Syntax Error:</span> {error}
-            {line && (
-              <span className="ml-2 font-mono text-[11px] px-1.5 py-0.5 rounded bg-[#F43F5E]/20">
-                Line {line}, Col {column}
-              </span>
-            )}
+      {/* Smart Fix Banner when errors detected */}
+      {!isValid && inputJson.trim() && (
+        <div className="mb-4">
+          <SmartFixBanner
+            diagnostics={diagnostics}
+            candidate={candidate}
+            rawInput={inputJson}
+            onApplyFix={handleApplySmartFix}
+            onUndoFix={handleUndoFix}
+            canUndo={undoInput !== null}
+          />
+        </div>
+      )}
+
+      {/* Undo Banner if currently fixed */}
+      {isValid && undoInput !== null && (
+        <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs text-emerald-300">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <span>Deterministic Smart Fix applied. Document is valid JSON.</span>
           </div>
+          <button
+            onClick={handleUndoFix}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/40 font-medium transition cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Undo Fix</span>
+          </button>
         </div>
       )}
 
@@ -262,6 +282,7 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
             value={inputJson}
             onChange={(val) => {
               setInputJson(val);
+              if (undoInput !== null) setUndoInput(null);
               // live auto-update output if valid
               try {
                 const p = JSON.parse(val);
@@ -273,47 +294,46 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
             }}
             placeholder="Paste raw unformatted or formatted JSON..."
             error={error}
+            errorLine={line}
+            diagnostics={diagnostics}
+            canSmartFix={canSmartFix}
+            onSmartFix={() => candidate && handleApplySmartFix(candidate.repaired)}
           />
         </div>
 
         {/* Output Editor */}
         <div className="flex flex-col">
-          <CodeEditor
-            title="Formatted Output"
-            value={outputJson}
-            readOnly={false}
-            onChange={setOutputJson}
-            placeholder="Formatted output will appear here..."
-          />
-        </div>
-      </div>
+          <div className="relative flex-1 flex flex-col">
+            <CodeEditor
+              title="Formatted Output"
+              value={outputJson}
+              onChange={setOutputJson}
+              readOnly
+              placeholder="Formatted JSON will appear here..."
+            />
 
-      {/* Status Bar */}
-      <div className="mt-4 px-4 py-2.5 rounded-lg bg-[#121620] border border-[#1A202C] flex flex-wrap items-center justify-between text-xs text-slate-400">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5">
-            {isValid === true ? (
-              <>
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                <span className="text-[#34D399] font-medium">Valid JSON</span>
-              </>
-            ) : isValid === false ? (
-              <>
-                <AlertCircle className="w-3.5 h-3.5 text-[#F43F5E]" />
-                <span className="text-[#F43F5E] font-medium">Invalid JSON</span>
-              </>
-            ) : (
-              <span>Empty Payload</span>
+            {/* Quick Actions floating over output editor */}
+            {outputJson && (
+              <div className="absolute top-2.5 right-3 flex items-center gap-1.5">
+                <button
+                  onClick={handleCopy}
+                  className="px-2 py-1 rounded bg-[#1A202C] hover:bg-[#262D3D] text-slate-300 hover:text-white text-[11px] font-medium border border-[#262D3D] flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                  title="Copy formatted JSON"
+                >
+                  <Copy className="w-3 h-3 text-[#38BDF8]" />
+                  <span>Copy</span>
+                </button>
+                <button
+                  onClick={handleDownload}
+                  className="px-2 py-1 rounded bg-[#1A202C] hover:bg-[#262D3D] text-slate-300 hover:text-white text-[11px] font-medium border border-[#262D3D] flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                  title="Download formatted JSON file"
+                >
+                  <Download className="w-3 h-3 text-[#34D399]" />
+                  <span>Download</span>
+                </button>
+              </div>
             )}
-          </span>
-          <span>•</span>
-          <span>Input: {inputLines} lines ({inputSize} bytes)</span>
-          <span>•</span>
-          <span>Output: {outputLines} lines ({outputSize} bytes)</span>
-        </div>
-
-        <div className="font-mono text-[11px] text-slate-500">
-          Format: {indentation === 'tab' ? 'Tab' : `${indentation}-space`} indent
+          </div>
         </div>
       </div>
 

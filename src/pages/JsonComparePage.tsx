@@ -2,9 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ToolHeader } from '../components/ToolHeader';
 import { CodeEditor } from '../components/CodeEditor';
+import { SmartFixBanner } from '../components/SmartFixBanner';
 import { SeoContentSection } from '../components/SeoContentSection';
 import { SEO_DATA_BY_PATH } from '../data/seoContent';
 import { compareJson, DiffResult, DiffType } from '../utils/jsonDiff';
+import { JsonEngine } from '../utils/jsonEngine';
 import {
   GitCompare,
   Plus,
@@ -51,60 +53,85 @@ export const JsonComparePage: React.FC<{ onShowToast: (msg: string, type?: 'succ
 }) => {
   const [jsonA, setJsonA] = useState<string>('');
   const [jsonB, setJsonB] = useState<string>('');
+  const [undoA, setUndoA] = useState<string | null>(null);
+  const [undoB, setUndoB] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<'all' | 'added' | 'removed' | 'changed'>('all');
   const [searchPath, setSearchPath] = useState('');
 
-  // Parse state
-  const stateA = useMemo(() => {
-    if (!jsonA.trim()) return { data: null, isValid: false, error: null };
-    try {
-      return { data: JSON.parse(jsonA), isValid: true, error: null };
-    } catch (err: any) {
-      return { data: null, isValid: false, error: err?.message || 'Invalid JSON syntax in A' };
-    }
+  // Validate Side A and Side B independently using shared JsonEngine
+  const validationA = useMemo(() => {
+    return JsonEngine.validate(jsonA);
   }, [jsonA]);
 
-  const stateB = useMemo(() => {
-    if (!jsonB.trim()) return { data: null, isValid: false, error: null };
-    try {
-      return { data: JSON.parse(jsonB), isValid: true, error: null };
-    } catch (err: any) {
-      return { data: null, isValid: false, error: err?.message || 'Invalid JSON syntax in B' };
-    }
+  const validationB = useMemo(() => {
+    return JsonEngine.validate(jsonB);
   }, [jsonB]);
 
   // Diff calculation
   const diffResult: DiffResult | null = useMemo(() => {
-    if (!stateA.isValid || !stateB.isValid || stateA.data === null || stateB.data === null) {
+    if (!validationA.isValid || !validationB.isValid || validationA.data === null || validationB.data === null) {
       return null;
     }
-    return compareJson(stateA.data, stateB.data);
-  }, [stateA, stateB]);
+    return compareJson(validationA.data, validationB.data);
+  }, [validationA, validationB]);
 
   const handleSwap = () => {
     const temp = jsonA;
     setJsonA(jsonB);
     setJsonB(temp);
+    setUndoA(null);
+    setUndoB(null);
     onShowToast('Swapped JSON A and JSON B', 'info');
   };
 
   const handleResetSample = () => {
     setJsonA(SAMPLE_A);
     setJsonB(SAMPLE_B);
+    setUndoA(null);
+    setUndoB(null);
     onShowToast('Reset to sample comparison datasets', 'info');
   };
 
   const handleClear = () => {
     setJsonA('');
     setJsonB('');
+    setUndoA(null);
+    setUndoB(null);
     onShowToast('Cleared both editors', 'info');
+  };
+
+  const handleApplyFixA = (fixed: string) => {
+    setUndoA(jsonA);
+    setJsonA(fixed);
+    onShowToast('Applied Smart Fix to JSON A', 'success');
+  };
+
+  const handleUndoFixA = () => {
+    if (undoA !== null) {
+      setJsonA(undoA);
+      setUndoA(null);
+      onShowToast('Reverted JSON A', 'info');
+    }
+  };
+
+  const handleApplyFixB = (fixed: string) => {
+    setUndoB(jsonB);
+    setJsonB(fixed);
+    onShowToast('Applied Smart Fix to JSON B', 'success');
+  };
+
+  const handleUndoFixB = () => {
+    if (undoB !== null) {
+      setJsonB(undoB);
+      setUndoB(null);
+      onShowToast('Reverted JSON B', 'info');
+    }
   };
 
   // Filtered diff entries
   const filteredEntries = useMemo(() => {
     if (!diffResult) return [];
     return diffResult.entries.filter((entry) => {
-      // Exclude pure identical entries from difference list unless needed
       if (entry.type === 'identical') return false;
       if (activeFilter !== 'all' && entry.type !== activeFilter) return false;
       if (searchPath && !entry.path.toLowerCase().includes(searchPath.toLowerCase())) return false;
@@ -199,17 +226,33 @@ export const JsonComparePage: React.FC<{ onShowToast: (msg: string, type?: 'succ
         </div>
       )}
 
-      {/* Invalid warnings */}
-      {(Boolean(stateA.error) || Boolean(stateB.error)) && (
-        <div className="mb-4 p-3 rounded-lg bg-[#F43F5E]/10 border border-[#F43F5E]/30 text-xs text-[#F43F5E] flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>
-            {stateA.error ? `JSON A: ${stateA.error}` : ''}
-            {stateA.error && stateB.error ? ' | ' : ''}
-            {stateB.error ? `JSON B: ${stateB.error}` : ''}
-          </span>
+      {/* Smart Fix Banners if either document is invalid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div>
+          {!validationA.isValid && jsonA.trim() && (
+            <SmartFixBanner
+              diagnostics={validationA.diagnostics}
+              candidate={validationA.candidate}
+              rawInput={jsonA}
+              onApplyFix={handleApplyFixA}
+              onUndoFix={handleUndoFixA}
+              canUndo={undoA !== null}
+            />
+          )}
         </div>
-      )}
+        <div>
+          {!validationB.isValid && jsonB.trim() && (
+            <SmartFixBanner
+              diagnostics={validationB.diagnostics}
+              candidate={validationB.candidate}
+              rawInput={jsonB}
+              onApplyFix={handleApplyFixB}
+              onUndoFix={handleUndoFixB}
+              canUndo={undoB !== null}
+            />
+          )}
+        </div>
+      </div>
 
       {/* Editors Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
@@ -217,9 +260,16 @@ export const JsonComparePage: React.FC<{ onShowToast: (msg: string, type?: 'succ
           <CodeEditor
             title="Original JSON (A)"
             value={jsonA}
-            onChange={setJsonA}
+            onChange={(val) => {
+              setJsonA(val);
+              if (undoA !== null) setUndoA(null);
+            }}
             placeholder="Paste original JSON..."
-            error={stateA.error}
+            error={validationA.error}
+            errorLine={validationA.line}
+            diagnostics={validationA.diagnostics}
+            canSmartFix={Boolean(validationA.candidate && validationA.candidate.isValid && validationA.candidate.confidence !== 'low')}
+            onSmartFix={() => validationA.candidate && handleApplyFixA(validationA.candidate.repaired)}
           />
         </div>
 
@@ -227,100 +277,105 @@ export const JsonComparePage: React.FC<{ onShowToast: (msg: string, type?: 'succ
           <CodeEditor
             title="Modified JSON (B)"
             value={jsonB}
-            onChange={setJsonB}
+            onChange={(val) => {
+              setJsonB(val);
+              if (undoB !== null) setUndoB(null);
+            }}
             placeholder="Paste modified JSON..."
-            error={stateB.error}
+            error={validationB.error}
+            errorLine={validationB.line}
+            diagnostics={validationB.diagnostics}
+            canSmartFix={Boolean(validationB.candidate && validationB.candidate.isValid && validationB.candidate.confidence !== 'low')}
+            onSmartFix={() => validationB.candidate && handleApplyFixB(validationB.candidate.repaired)}
           />
         </div>
       </div>
 
-      {/* Difference Detail Table / List */}
-      <div className="bg-[#121620] border border-[#1A202C] rounded-xl overflow-hidden shadow-xl">
-        <div className="flex items-center justify-between px-4 py-3 bg-[#0B0D13]/70 border-b border-[#1A202C]">
-          <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-[#38BDF8]" />
-            <span className="text-xs font-semibold text-white">Differences Inspector</span>
-            <span className="text-[11px] text-slate-500">
-              ({filteredEntries.length} items shown)
-            </span>
-          </div>
-
-          <div className="relative">
-            <Search className="w-3 h-3 absolute left-2.5 top-2 text-slate-400" />
-            <input
-              type="text"
-              value={searchPath}
-              onChange={(e) => setSearchPath(e.target.value)}
-              placeholder="Search path..."
-              className="bg-[#0B0D13] border border-[#262D3D] rounded-md pl-7 pr-3 py-1 text-xs text-slate-200 focus:outline-none focus:border-[#38BDF8] w-36 font-mono"
-            />
-          </div>
-        </div>
-
-        <div className="max-h-80 overflow-y-auto divide-y divide-[#1A202C] font-mono text-xs">
-          {filteredEntries.length === 0 ? (
-            <div className="p-8 text-center text-slate-500 font-sans">
-              {diffResult?.summary.isIdentical
-                ? 'No differences between JSON A and JSON B.'
-                : 'No differences matching current filter.'}
+      {/* Difference Results Table */}
+      {diffResult && (
+        <div className="bg-[#121620] border border-[#1A202C] rounded-xl overflow-hidden shadow-xl mb-4">
+          <div className="flex items-center justify-between px-4 py-3 bg-[#0B0D13]/70 border-b border-[#1A202C]">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#38BDF8]" />
+              <span className="font-semibold text-xs text-white">Structural Diff Entries</span>
+              <span className="text-[11px] font-mono text-slate-500">
+                ({filteredEntries.length} displayed)
+              </span>
             </div>
-          ) : (
-            filteredEntries.map((entry, idx) => {
-              const isAdd = entry.type === 'added';
-              const isRem = entry.type === 'removed';
-              const isMod = entry.type === 'changed';
 
-              return (
-                <div
-                  key={idx}
-                  className="p-3 hover:bg-[#1A202C]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                        isAdd
-                          ? 'bg-[#34D399]/20 text-[#34D399] border border-[#34D399]/30'
-                          : isRem
-                          ? 'bg-[#F43F5E]/20 text-[#F43F5E] border border-[#F43F5E]/30'
-                          : 'bg-[#FBBF24]/20 text-[#FBBF24] border border-[#FBBF24]/30'
-                      }`}
-                    >
-                      {entry.type}
-                    </span>
-                    <span className="text-white font-semibold">{entry.path}</span>
-                  </div>
+            <div className="relative">
+              <Search className="w-3 h-3 absolute left-2.5 top-2 text-slate-400" />
+              <input
+                type="text"
+                value={searchPath}
+                onChange={(e) => setSearchPath(e.target.value)}
+                placeholder="Filter by path..."
+                className="bg-[#0B0D13] border border-[#262D3D] rounded-md pl-7 pr-3 py-1 text-xs text-slate-200 focus:outline-none focus:border-[#38BDF8] w-48 font-mono"
+              />
+            </div>
+          </div>
 
-                  <div className="flex items-center gap-3 text-[11px] overflow-hidden">
-                    {isRem && (
-                      <span className="text-[#F43F5E] line-through truncate max-w-xs">
-                        {JSON.stringify(entry.oldValue)}
-                      </span>
-                    )}
-
-                    {isAdd && (
-                      <span className="text-[#34D399] truncate max-w-xs">
-                        {JSON.stringify(entry.newValue)}
-                      </span>
-                    )}
-
-                    {isMod && (
-                      <div className="flex items-center gap-2 truncate max-w-sm">
-                        <span className="text-[#F43F5E] line-through truncate">
-                          {JSON.stringify(entry.oldValue)}
+          <div className="overflow-x-auto max-h-96">
+            {filteredEntries.length === 0 ? (
+              <div className="p-8 text-center text-xs text-slate-500">
+                No differences match the current filter.
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-[#1A202C] bg-[#0E131F] text-slate-400 font-mono text-[11px]">
+                    <th className="p-3">Type</th>
+                    <th className="p-3">JSON Path</th>
+                    <th className="p-3">Original Value (A)</th>
+                    <th className="p-3">Modified Value (B)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1A202C] font-mono">
+                  {filteredEntries.map((item, idx) => (
+                    <tr key={idx} className="hover:bg-[#161C28] transition-colors">
+                      <td className="p-3">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${
+                            item.type === 'added'
+                              ? 'bg-[#34D399]/15 text-[#34D399] border-[#34D399]/30'
+                              : item.type === 'removed'
+                              ? 'bg-[#F43F5E]/15 text-[#F43F5E] border-[#F43F5E]/30'
+                              : 'bg-[#FBBF24]/15 text-[#FBBF24] border-[#FBBF24]/30'
+                          }`}
+                        >
+                          {item.type === 'added' && <Plus className="w-3 h-3" />}
+                          {item.type === 'removed' && <Minus className="w-3 h-3" />}
+                          {item.type === 'changed' && <RotateCw className="w-3 h-3" />}
+                          <span>{item.type}</span>
                         </span>
-                        <span className="text-slate-500">→</span>
-                        <span className="text-[#34D399] truncate">
-                          {JSON.stringify(entry.newValue)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
+                      </td>
+                      <td className="p-3 text-slate-200 font-semibold">{item.path}</td>
+                      <td className="p-3 text-rose-300">
+                        {item.oldValue !== undefined ? (
+                          <span className="bg-rose-950/20 px-1.5 py-0.5 rounded border border-rose-500/20">
+                            {JSON.stringify(item.oldValue)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-600 italic">undefined</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-emerald-300">
+                        {item.newValue !== undefined ? (
+                          <span className="bg-emerald-950/20 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                            {JSON.stringify(item.newValue)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-600 italic">undefined</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <SeoContentSection content={SEO_DATA_BY_PATH['/json-compare']} />
     </div>

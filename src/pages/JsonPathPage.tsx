@@ -2,10 +2,12 @@ import React, { useState, useMemo } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ToolHeader } from '../components/ToolHeader';
 import { CodeEditor } from '../components/CodeEditor';
+import { SmartFixBanner } from '../components/SmartFixBanner';
 import { SeoContentSection } from '../components/SeoContentSection';
 import { SEO_DATA_BY_PATH } from '../data/seoContent';
 import { SAMPLE_DATASETS } from '../data/samples';
 import { evaluateJsonPath } from '../utils/jsonpath';
+import { JsonEngine } from '../utils/jsonEngine';
 import {
   Search,
   Copy,
@@ -17,6 +19,7 @@ import {
   Code,
   Table as TableIcon,
   Play,
+  Sparkles,
 } from 'lucide-react';
 
 const COMMON_QUERIES = [
@@ -31,21 +34,17 @@ export const JsonPathPage: React.FC<{ onShowToast: (msg: string, type?: 'success
   onShowToast,
 }) => {
   const [jsonText, setJsonText] = useState<string>('');
+  const [undoText, setUndoText] = useState<string | null>(null);
   const [query, setQuery] = useState<string>('$');
   const [viewMode, setViewMode] = useState<'raw' | 'table'>('raw');
   const [showCheatSheet, setShowCheatSheet] = useState(false);
 
-  // Parse JSON
-  const { parsedData, isValid, syntaxError } = useMemo(() => {
-    if (!jsonText.trim()) {
-      return { parsedData: null, isValid: false, syntaxError: null };
-    }
-    try {
-      return { parsedData: JSON.parse(jsonText), isValid: true, syntaxError: null };
-    } catch (err: any) {
-      return { parsedData: null, isValid: false, syntaxError: err?.message || 'Invalid JSON syntax' };
-    }
+  // Validate using shared JsonEngine
+  const validation = useMemo(() => {
+    return JsonEngine.validate(jsonText);
   }, [jsonText]);
+
+  const { isValid, data: parsedData, error: syntaxError, line, diagnostics, candidate } = validation;
 
   // Evaluate JSONPath
   const result = useMemo(() => {
@@ -66,6 +65,20 @@ export const JsonPathPage: React.FC<{ onShowToast: (msg: string, type?: 'success
     return evaluateJsonPath(query, parsedData);
   }, [jsonText, query, parsedData, isValid]);
 
+  const handleApplySmartFix = (fixedText: string) => {
+    setUndoText(jsonText);
+    setJsonText(fixedText);
+    onShowToast('Deterministic Smart Fix applied: Converted to valid RFC 8259 JSON', 'success');
+  };
+
+  const handleUndoFix = () => {
+    if (undoText !== null) {
+      setJsonText(undoText);
+      setUndoText(null);
+      onShowToast('Reverted to original JSON', 'info');
+    }
+  };
+
   const handleCopyResults = () => {
     if (!result.rawValues || result.rawValues.length === 0) return;
     navigator.clipboard.writeText(JSON.stringify(result.rawValues, null, 2));
@@ -74,12 +87,14 @@ export const JsonPathPage: React.FC<{ onShowToast: (msg: string, type?: 'success
 
   const handleResetSample = () => {
     setJsonText(JSON.stringify(SAMPLE_DATASETS[0].data, null, 2));
+    setUndoText(null);
     setQuery('$.store.book[*]');
     onShowToast('Loaded bookstore sample dataset', 'info');
   };
 
   const handleClear = () => {
     setJsonText('');
+    setUndoText(null);
     setQuery('');
     onShowToast('Cleared input', 'info');
   };
@@ -134,6 +149,37 @@ export const JsonPathPage: React.FC<{ onShowToast: (msg: string, type?: 'success
           </>
         }
       />
+
+      {/* Smart Fix Banner when errors detected */}
+      {!isValid && jsonText.trim() && (
+        <div className="mb-4">
+          <SmartFixBanner
+            diagnostics={diagnostics}
+            candidate={candidate}
+            rawInput={jsonText}
+            onApplyFix={handleApplySmartFix}
+            onUndoFix={handleUndoFix}
+            canUndo={undoText !== null}
+          />
+        </div>
+      )}
+
+      {/* Undo Banner if currently fixed */}
+      {isValid && undoText !== null && (
+        <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs text-emerald-300">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <span>Deterministic Smart Fix active. Document is valid RFC 8259 JSON.</span>
+          </div>
+          <button
+            onClick={handleUndoFix}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/40 font-medium transition cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Undo Fix</span>
+          </button>
+        </div>
+      )}
 
       {/* Syntax Guide Panel */}
       {showCheatSheet && (
@@ -226,9 +272,16 @@ export const JsonPathPage: React.FC<{ onShowToast: (msg: string, type?: 'success
           <CodeEditor
             title="Source Payload"
             value={jsonText}
-            onChange={setJsonText}
+            onChange={(val) => {
+              setJsonText(val);
+              if (undoText !== null) setUndoText(null);
+            }}
             placeholder="Paste JSON document..."
             error={syntaxError}
+            errorLine={line}
+            diagnostics={diagnostics}
+            canSmartFix={Boolean(candidate && candidate.isValid && candidate.confidence !== 'low')}
+            onSmartFix={() => candidate && handleApplySmartFix(candidate.repaired)}
           />
         </div>
 
@@ -238,80 +291,83 @@ export const JsonPathPage: React.FC<{ onShowToast: (msg: string, type?: 'success
           <div className="flex items-center justify-between px-4 py-3 bg-[#0B0D13]/70 border-b border-[#1A202C]">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-white">Query Results</span>
-              <span
-                className={`text-[10px] font-mono px-2 py-0.5 rounded ${
-                  result.error
-                    ? 'bg-[#F43F5E]/20 text-[#F43F5E] border border-[#F43F5E]/30'
-                    : 'bg-[#34D399]/20 text-[#34D399] border border-[#34D399]/30'
-                }`}
-              >
-                {result.error ? 'Error' : `${result.matches.length} matches`}
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#1A202C] text-[#38BDF8]">
+                {result.rawValues ? `${result.rawValues.length} match(es)` : '0 matches'}
               </span>
             </div>
 
             {/* View Mode Toggle */}
-            {isTableCompatible && (
-              <div className="flex items-center bg-[#0B0D13] p-0.5 rounded border border-[#262D3D]">
-                <button
-                  onClick={() => setViewMode('raw')}
-                  className={`px-2 py-1 rounded text-[11px] font-medium flex items-center gap-1 cursor-pointer ${
-                    viewMode === 'raw' ? 'bg-[#121620] text-white' : 'text-slate-400'
-                  }`}
-                >
-                  <Code className="w-3 h-3" />
-                  <span>JSON</span>
-                </button>
-                <button
-                  onClick={() => setViewMode('table')}
-                  className={`px-2 py-1 rounded text-[11px] font-medium flex items-center gap-1 cursor-pointer ${
-                    viewMode === 'table' ? 'bg-[#121620] text-white' : 'text-slate-400'
-                  }`}
-                >
-                  <TableIcon className="w-3 h-3" />
-                  <span>Table</span>
-                </button>
-              </div>
-            )}
+            <div className="flex items-center gap-1 bg-[#0B0D13] p-0.5 rounded-lg border border-[#262D3D]">
+              <button
+                onClick={() => setViewMode('raw')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs transition-colors cursor-pointer ${
+                  viewMode === 'raw' ? 'bg-[#121620] text-white font-medium shadow-sm' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Code className="w-3 h-3" />
+                <span>JSON</span>
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                disabled={!isTableCompatible}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                  viewMode === 'table' ? 'bg-[#121620] text-white font-medium shadow-sm' : 'text-slate-400 hover:text-white'
+                }`}
+                title={!isTableCompatible ? 'Matches must be an array of objects for table view' : ''}
+              >
+                <TableIcon className="w-3 h-3" />
+                <span>Table</span>
+              </button>
+            </div>
           </div>
 
-          {/* Result Content */}
-          <div className="flex-1 p-4 overflow-auto font-mono text-xs">
+          {/* Results Workspace */}
+          <div className="flex-1 p-4 overflow-auto font-mono text-xs max-h-[640px]">
             {result.error ? (
-              <div className="p-3 rounded-lg bg-[#F43F5E]/10 border border-[#F43F5E]/30 text-[#F43F5E]">
-                <div className="flex items-center gap-2 font-semibold font-sans mb-1">
-                  <AlertCircle className="w-4 h-4" />
-                  <span>JSONPath Error</span>
+              <div className="p-4 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold block">Query Evaluation Blocked:</span>
+                  <span className="text-xs">{result.error}</span>
                 </div>
-                <p className="text-xs font-mono">{result.error}</p>
               </div>
-            ) : result.matches.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-slate-500 py-16 font-sans">
-                <Search className="w-8 h-8 text-slate-700 mb-2" />
-                <p className="text-xs text-slate-400">No nodes matched the given JSONPath query</p>
-                <span className="text-[11px] text-slate-600 font-mono mt-1">{query}</span>
+            ) : !result.rawValues || result.rawValues.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-slate-500 py-16">
+                <Search className="w-10 h-10 text-slate-700 mb-3" />
+                <p className="text-xs font-sans text-slate-400">No matching elements found for this query.</p>
               </div>
-            ) : viewMode === 'table' && isTableCompatible ? (
+            ) : viewMode === 'raw' ? (
+              <pre className="text-slate-200 whitespace-pre-wrap leading-relaxed">
+                {JSON.stringify(result.rawValues, null, 2)}
+              </pre>
+            ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-[#262D3D] text-slate-400 bg-[#0B0D13]">
-                      <th className="p-2 font-semibold">#</th>
-                      {tableHeaders.map((header) => (
-                        <th key={header} className="p-2 font-semibold">
-                          {header}
+                    <tr className="border-b border-[#1A202C] bg-[#0E131F] text-slate-400 text-[11px]">
+                      <th className="p-2.5">#</th>
+                      {tableHeaders.map((head) => (
+                        <th key={head} className="p-2.5 font-semibold text-slate-300">
+                          {head}
                         </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#1A202C]">
                     {result.rawValues.map((row: any, idx: number) => (
-                      <tr key={idx} className="hover:bg-[#1A202C]/50">
-                        <td className="p-2 text-slate-500">{idx + 1}</td>
-                        {tableHeaders.map((header) => (
-                          <td key={header} className="p-2 text-slate-300 whitespace-nowrap">
-                            {typeof row[header] === 'object'
-                              ? JSON.stringify(row[header])
-                              : String(row[header] ?? '')}
+                      <tr key={idx} className="hover:bg-[#161C28] transition-colors">
+                        <td className="p-2.5 text-slate-500 text-[11px]">{idx + 1}</td>
+                        {tableHeaders.map((head) => (
+                          <td key={head} className="p-2.5 text-slate-300">
+                            {row[head] !== undefined ? (
+                              typeof row[head] === 'object' ? (
+                                <span className="text-purple-400">{JSON.stringify(row[head])}</span>
+                              ) : (
+                                String(row[head])
+                              )
+                            ) : (
+                              <span className="text-slate-600">—</span>
+                            )}
                           </td>
                         ))}
                       </tr>
@@ -319,10 +375,6 @@ export const JsonPathPage: React.FC<{ onShowToast: (msg: string, type?: 'success
                   </tbody>
                 </table>
               </div>
-            ) : (
-              <pre className="text-[#38BDF8] leading-relaxed whitespace-pre-wrap">
-                {JSON.stringify(result.rawValues, null, 2)}
-              </pre>
             )}
           </div>
         </div>
