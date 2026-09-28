@@ -159,6 +159,7 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
       <ToolHeader
         title="JSON Formatter & Beautifier"
         description="Clean, indent, and format JSON code to improve readability and maintain compliance with RFC 8259 standards."
+        icon={Braces}
         badge="Zero-Lag Parser"
         actions={
           <>

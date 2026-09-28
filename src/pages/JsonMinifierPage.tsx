@@ -120,6 +120,7 @@ export const JsonMinifierPage: React.FC<{ onShowToast: (msg: string, type?: 'suc
       <ToolHeader
         title="JSON Minifier & Compressor"
         description="Remove unnecessary whitespace, newlines, and indentation from JSON documents to reduce payload size and optimize network transmission."
+        icon={Minimize2}
         badge="Zero-Loss Compression"
         actions={
           <>

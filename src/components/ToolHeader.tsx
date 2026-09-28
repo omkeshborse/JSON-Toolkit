@@ -1,10 +1,10 @@
 import React from 'react';
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon, Sparkles } from 'lucide-react';
 
 interface ToolHeaderProps {
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
   badge?: string;
   actions?: React.ReactNode;
 }
@@ -12,7 +12,7 @@ interface ToolHeaderProps {
 export const ToolHeader: React.FC<ToolHeaderProps> = ({
   title,
   description,
-  icon: Icon,
+  icon: Icon = Sparkles,
   badge,
   actions,
 }) => {
@@ -20,7 +20,7 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 mb-4 border-b border-[#1A202C]">
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-lg bg-[#121620] border border-[#262D3D] flex items-center justify-center text-[#38BDF8] shrink-0 mt-0.5">
-          <Icon className="w-5 h-5" />
+          {Icon ? <Icon className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
         </div>
         <div>
           <div className="flex items-center gap-2">
@@ -41,3 +41,4 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
     </div>
   );
 };
+export default ToolHeader;

@@ -193,6 +193,7 @@ export const JsonValidatorPage: React.FC<{ onShowToast: (msg: string, type?: 'su
       <ToolHeader
         title="JSON Validator & Repair Engine"
         description="Analyze RFC 8259 compliance, inspect syntax errors with contextual diagnostics, and repair broken payloads with deterministic zero-hallucination rules."
+        icon={CheckCircle2}
         badge="Syntax & Repair Engine"
         actions={
           <>
