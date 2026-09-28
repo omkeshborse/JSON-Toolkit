@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ToolHeader } from '../components/ToolHeader';
 import { CodeEditor } from '../components/CodeEditor';
@@ -17,7 +17,10 @@ import {
   RotateCcw,
   Sparkles,
   Minimize2,
+  Maximize2,
   Sliders,
+  Expand,
+  Shrink,
   Wand2,
 } from 'lucide-react';
 
@@ -28,6 +31,12 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
   const [outputJson, setOutputJson] = useState<string>('');
   const [indentation, setIndentation] = useState<number | 'tab'>(2);
   const [undoInput, setUndoInput] = useState<string | null>(null);
+
+  // Common Workspace UI State: exactly ONE expand/fullscreen state for the entire workspace
+  // 'normal' | 'expanded' | 'fullscreen'
+  const [workspaceMode, setWorkspaceMode] = useState<'normal' | 'expanded' | 'fullscreen'>('normal');
+
+  const workspaceContainerRef = useRef<HTMLDivElement>(null);
 
   // Unified validation via shared JsonEngine
   const validation = useMemo(() => {
@@ -124,17 +133,7 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
     onShowToast('Loaded sample dataset', 'info');
   };
 
-  // Copy Action
-  const handleCopy = () => {
-    if (!outputJson) {
-      onShowToast('No formatted JSON to copy', 'error');
-      return;
-    }
-    navigator.clipboard.writeText(outputJson);
-    onShowToast('Copied formatted JSON to clipboard', 'success');
-  };
-
-  // Download Action
+  // Output Download Action
   const handleDownload = () => {
     if (!outputJson) {
       onShowToast('No formatted JSON to download', 'error');
@@ -150,7 +149,112 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
     onShowToast('Downloaded formatted.json', 'success');
   };
 
+  // Common Workspace Expand/Fullscreen Toggle
+  const handleToggleWorkspaceFullscreen = () => {
+    setWorkspaceMode((prev) => {
+      const next = prev === 'fullscreen' ? 'normal' : 'fullscreen';
+      if (next === 'fullscreen') {
+        try {
+          if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          }
+        } catch {
+          // ignore
+        }
+      } else {
+        try {
+          if (document.fullscreenElement && document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          }
+        } catch {
+          // ignore
+        }
+      }
+      return next;
+    });
+  };
+
+  // Optional in-page expand toggle if user wants expanded without fullscreen
+  const handleToggleWorkspaceExpand = () => {
+    setWorkspaceMode((prev) => (prev === 'expanded' ? 'normal' : 'expanded'));
+  };
+
+  // Exit fullscreen callback
+  const exitWorkspaceFullscreen = useCallback(() => {
+    setWorkspaceMode('normal');
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Handle Escape key & fullscreenchange event
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (workspaceMode === 'fullscreen') {
+          exitWorkspaceFullscreen();
+        } else if (workspaceMode === 'expanded') {
+          setWorkspaceMode('normal');
+        }
+      }
+    };
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && workspaceMode === 'fullscreen') {
+        setWorkspaceMode('normal');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, [workspaceMode, exitWorkspaceFullscreen]);
+
+  // Lock background scroll when workspace is in fullscreen mode
+  useEffect(() => {
+    if (workspaceMode === 'fullscreen') {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [workspaceMode]);
+
   const canSmartFix = Boolean(candidate && candidate.isValid && candidate.confidence !== 'low');
+
+  const isFullscreen = workspaceMode === 'fullscreen';
+  const isExpanded = workspaceMode === 'expanded';
+
+  // Custom output panel download button to place on Output header
+  const outputDownloadAction = (
+    <button
+      type="button"
+      onClick={handleDownload}
+      disabled={!outputJson}
+      className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#1A202C] hover:bg-[#262D3D] text-slate-300 hover:text-white border border-[#262D3D] text-xs transition-colors cursor-pointer disabled:opacity-50"
+      title="Download formatted JSON file"
+      aria-label="Download formatted JSON"
+    >
+      <Download className="w-3 h-3 text-[#34D399]" />
+      <span className="hidden sm:inline">Download</span>
+    </button>
+  );
+
+  // Dynamic editor height classes based on workspaceMode
+  const editorHeightClass = isFullscreen
+    ? 'h-[calc(100vh-140px)] min-h-[400px]'
+    : isExpanded
+    ? 'h-[75vh] min-h-[620px]'
+    : 'h-[calc(100vh-250px)] min-h-[460px]';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col w-full">
@@ -181,7 +285,7 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
         }
       />
 
-      {/* Control bar */}
+      {/* Control bar with ONE COMMON Expand / Fullscreen control */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#121620] border border-[#1A202C] rounded-xl mb-4 text-xs">
         <div className="flex flex-wrap items-center gap-2">
           {/* Main Action: Format */}
@@ -212,8 +316,8 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
           </button>
         </div>
 
-        {/* Right side settings: Indentation selector */}
-        <div className="flex items-center gap-3">
+        {/* Right side settings: Indentation selector + ONE COMMON Expand/Fullscreen Workspace Button */}
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1.5 text-slate-400">
             <Sliders className="w-3.5 h-3.5" />
             <span>Indentation:</span>
@@ -240,6 +344,43 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
               </button>
             ))}
           </div>
+
+          {/* Separator before Workspace Expand/Fullscreen */}
+          <div className="h-4 w-px bg-[#262D3D] hidden sm:block" />
+
+          {/* In-page expand toggle */}
+          {!isFullscreen && (
+            <button
+              type="button"
+              onClick={handleToggleWorkspaceExpand}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                isExpanded
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+                  : 'bg-[#1A202C] hover:bg-[#262D3D] text-slate-300 hover:text-white border-[#262D3D]'
+              }`}
+              title={isExpanded ? 'Restore normal workspace layout' : 'Expand workspace inside page'}
+              aria-label={isExpanded ? 'Restore JSON workspace' : 'Expand JSON workspace'}
+            >
+              {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+              <span>{isExpanded ? 'Restore' : 'Expand'}</span>
+            </button>
+          )}
+
+          {/* ONE COMMON Fullscreen Workspace Toggle Button */}
+          <button
+            type="button"
+            onClick={handleToggleWorkspaceFullscreen}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-sm ${
+              isFullscreen
+                ? 'bg-[#38BDF8] text-slate-950 hover:bg-[#38BDF8]/90'
+                : 'bg-[#1A202C] hover:bg-[#262D3D] text-slate-200 hover:text-white border border-[#262D3D]'
+            }`}
+            title={isFullscreen ? 'Exit fullscreen workspace (Esc)' : 'Expand JSON workspace to fullscreen'}
+            aria-label={isFullscreen ? 'Exit JSON workspace fullscreen' : 'Expand JSON workspace'}
+          >
+            {isFullscreen ? <Shrink className="w-3.5 h-3.5" /> : <Expand className="w-3.5 h-3.5" />}
+            <span>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+          </button>
         </div>
       </div>
 
@@ -274,66 +415,94 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
         </div>
       )}
 
-      {/* Side-by-side Editors */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1">
-        {/* Input Editor */}
-        <div className="flex flex-col">
-          <CodeEditor
-            title="Input JSON"
-            value={inputJson}
-            onChange={(val) => {
-              setInputJson(val);
-              if (undoInput !== null) setUndoInput(null);
-              // live auto-update output if valid
-              try {
-                const p = JSON.parse(val);
-                const indent = indentation === 'tab' ? '\t' : indentation;
-                setOutputJson(JSON.stringify(p, null, indent));
-              } catch {
-                // leave output as is during syntax transition
-              }
-            }}
-            placeholder="Paste raw unformatted or formatted JSON..."
-            error={error}
-            errorLine={line}
-            diagnostics={diagnostics}
-            canSmartFix={canSmartFix}
-            onSmartFix={() => candidate && handleApplySmartFix(candidate.repaired)}
-          />
-        </div>
+      {/* COMMON WORKSPACE (Input JSON 50% | Formatted Output 50%) */}
+      {/* When isFullscreen is active, this entire workspace container takes 100% viewport */}
+      <div
+        ref={workspaceContainerRef}
+        className={
+          isFullscreen
+            ? 'fixed inset-0 z-50 flex flex-col bg-[#0B0D13] w-screen h-screen overflow-hidden p-3 sm:p-4 shadow-2xl animate-in fade-in duration-150'
+            : 'w-full flex-1 flex flex-col'
+        }
+      >
+        {/* Fullscreen Workspace Header Bar */}
+        {isFullscreen && (
+          <div className="flex items-center justify-between px-3 py-2 bg-[#121620] border border-[#262D3D] rounded-xl mb-3 text-xs shrink-0">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#38BDF8] animate-pulse" />
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-white tracking-wide">
+                  JSON Workspace
+                </span>
+                <span className="hidden sm:inline-flex text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#1A202C] text-[#38BDF8] border border-[#262D3D]">
+                  Side-by-Side View
+                </span>
+              </div>
+            </div>
 
-        {/* Output Editor */}
-        <div className="flex flex-col">
-          <div className="relative flex-1 flex flex-col">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleFormat}
+                className="px-2.5 py-1 rounded bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-slate-950 font-semibold flex items-center gap-1 transition-colors cursor-pointer text-xs"
+              >
+                <Sparkles className="w-3 h-3" />
+                <span className="hidden sm:inline">Format JSON</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={exitWorkspaceFullscreen}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#1A202C] hover:bg-[#262D3D] text-slate-200 hover:text-white border border-[#262D3D] font-medium transition cursor-pointer text-xs"
+                title="Exit fullscreen (Esc)"
+                aria-label="Exit JSON workspace fullscreen"
+              >
+                <Shrink className="w-3.5 h-3.5 text-[#38BDF8]" />
+                <span>Exit Fullscreen</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Side-by-side Editors Workspace */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 overflow-hidden">
+          {/* Input Editor (50% on desktop) */}
+          <div className="flex flex-col w-full h-full min-h-0">
+            <CodeEditor
+              title="Input JSON"
+              value={inputJson}
+              onChange={(val) => {
+                setInputJson(val);
+                if (undoInput !== null) setUndoInput(null);
+                try {
+                  const p = JSON.parse(val);
+                  const indent = indentation === 'tab' ? '\t' : indentation;
+                  setOutputJson(JSON.stringify(p, null, indent));
+                } catch {
+                  // leave output as is during syntax transition
+                }
+              }}
+              placeholder="Paste raw unformatted or formatted JSON..."
+              error={error}
+              errorLine={line}
+              diagnostics={diagnostics}
+              canSmartFix={canSmartFix}
+              onSmartFix={() => candidate && handleApplySmartFix(candidate.repaired)}
+              heightClass={editorHeightClass}
+            />
+          </div>
+
+          {/* Formatted Output Editor (50% on desktop) */}
+          <div className="flex flex-col w-full h-full min-h-0">
             <CodeEditor
               title="Formatted Output"
               value={outputJson}
               onChange={setOutputJson}
               readOnly
               placeholder="Formatted JSON will appear here..."
+              heightClass={editorHeightClass}
+              extraActions={outputDownloadAction}
             />
-
-            {/* Quick Actions floating over output editor */}
-            {outputJson && (
-              <div className="absolute top-2.5 right-3 flex items-center gap-1.5">
-                <button
-                  onClick={handleCopy}
-                  className="px-2 py-1 rounded bg-[#1A202C] hover:bg-[#262D3D] text-slate-300 hover:text-white text-[11px] font-medium border border-[#262D3D] flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
-                  title="Copy formatted JSON"
-                >
-                  <Copy className="w-3 h-3 text-[#38BDF8]" />
-                  <span>Copy</span>
-                </button>
-                <button
-                  onClick={handleDownload}
-                  className="px-2 py-1 rounded bg-[#1A202C] hover:bg-[#262D3D] text-slate-300 hover:text-white text-[11px] font-medium border border-[#262D3D] flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
-                  title="Download formatted JSON file"
-                >
-                  <Download className="w-3 h-3 text-[#34D399]" />
-                  <span>Download</span>
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -342,3 +511,4 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
     </div>
   );
 };
+export default JsonFormatterPage;
