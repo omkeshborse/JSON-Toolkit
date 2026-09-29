@@ -1,1 +1,10 @@
-/*    /index.html   200
+# Explicit 200 rewrites for known prerendered routes
+/json-formatter    /json-formatter.html   200
+/json-validator    /json-validator.html   200
+/json-viewer       /json-viewer.html      200
+/json-minifier     /json-minifier.html    200
+/json-compare      /json-compare.html     200
+/jsonpath          /jsonpath.html         200
+/json-schema       /json-schema.html      200
+
+# Unknown URLs fall through to 404.html with real HTTP 404

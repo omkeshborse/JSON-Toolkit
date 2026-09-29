@@ -118,7 +118,7 @@ export const LandingPage: React.FC = () => {
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.15]">
-                Free Online <span className="text-[#38BDF8]">JSON Formatter</span> & Validator
+                Free Online JSON Tools for Developers
               </h1>
 
               <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl">
@@ -159,53 +159,34 @@ export const LandingPage: React.FC = () => {
                   <div className="text-xs text-slate-400">Network Latency</div>
                 </div>
                 <div>
-                  <div className="text-xl font-bold text-[#38BDF8] font-mono">RFC 8259</div>
-                  <div className="text-xs text-slate-400">Spec Compliant</div>
+                  <div className="text-xl font-bold text-[#38BDF8] font-mono">100%</div>
+                  <div className="text-xs text-slate-400">Local Privacy</div>
                 </div>
               </div>
             </div>
 
-            {/* Hero Right: Live Interactive Editor Preview */}
+            {/* Hero Right Code Preview */}
             <div className="lg:col-span-5">
-              <div className="bg-[#121620] rounded-xl border border-[#262D3D] shadow-2xl overflow-hidden">
-                <div className="px-4 py-3 bg-[#0B0D13]/70 border-b border-[#1A202C] flex items-center justify-between">
+              <div className="rounded-2xl bg-[#121620] border border-[#262D3D] shadow-2xl overflow-hidden">
+                <div className="px-4 py-3 bg-[#0B0D13]/80 border-b border-[#1A202C] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-[#F43F5E]/80"></div>
-                    <div className="w-3 h-3 rounded-full bg-[#FBBF24]/80"></div>
-                    <div className="w-3 h-3 rounded-full bg-[#34D399]/80"></div>
-                    <span className="text-xs text-slate-400 font-mono ml-2">preview.json</span>
+                    <div className="w-3 h-3 rounded-full bg-rose-500/80" />
+                    <div className="w-3 h-3 rounded-full bg-amber-500/80" />
+                    <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+                    <span className="ml-2 font-mono text-xs text-slate-400">payload.json</span>
                   </div>
                   <button
                     onClick={handleCopyPreview}
-                    className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-white px-2 py-1 rounded hover:bg-[#1A202C] transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
                   >
                     {copied ? <Check className="w-3.5 h-3.5 text-[#34D399]" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copied ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
-
-                <div className="p-4">
-                  <textarea
-                    value={editorText}
-                    onChange={(e) => setEditorText(e.target.value)}
-                    rows={12}
-                    className="w-full bg-transparent text-slate-200 font-mono text-xs leading-relaxed resize-none focus:outline-none focus:ring-0"
-                    spellCheck={false}
-                  />
-                </div>
-
-                <div className="px-4 py-2.5 bg-[#0B0D13]/50 border-t border-[#1A202C] flex items-center justify-between text-xs text-slate-400">
-                  <span className="text-[#34D399] flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Valid JSON Syntax
-                  </span>
-                  <Link
-                    to="/json-formatter"
-                    className="text-[#38BDF8] hover:underline flex items-center gap-1"
-                  >
-                    <span>Format in workspace</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </Link>
+                <div className="p-4 font-mono text-xs text-slate-200 overflow-x-auto leading-relaxed">
+                  <pre className="text-slate-300">
+                    <code>{editorText}</code>
+                  </pre>
                 </div>
               </div>
             </div>
@@ -213,120 +194,95 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Core Tools Grid Section */}
-      <section id="tools-grid" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Developer Tool Suites
-          </h2>
-          <p className="text-slate-400 text-sm mt-2">
-            Each utility is an independent workspace designed for its specific workflow.
-          </p>
-        </div>
+      {/* Tools Grid Section */}
+      <section id="tools-grid" className="py-20 bg-[#0B0D13]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              A Complete Developer Suite for JSON Operations
+            </h2>
+            <p className="text-sm sm:text-base text-slate-400">
+              Each tool is precision-engineered for speed, privacy, and full conformance to open standards.
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tools.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <Link
-                key={tool.to}
-                to={tool.to}
-                className="group p-6 rounded-xl bg-[#121620] border border-[#1A202C] hover:border-[#38BDF8]/40 transition-all hover:shadow-lg hover:shadow-[#38BDF8]/5 flex flex-col justify-between text-left"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 rounded-lg bg-[#0B0D13] border border-[#262D3D] flex items-center justify-center text-[#38BDF8] group-hover:scale-105 transition-transform">
-                      <Icon className="w-5 h-5" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {tools.map((tool) => {
+              const Icon = tool.icon;
+              return (
+                <Link
+                  key={tool.to}
+                  to={tool.to}
+                  className="group relative p-6 rounded-2xl bg-[#121620] border border-[#1A202C] hover:border-[#38BDF8]/40 transition-all duration-200 flex flex-col justify-between hover:shadow-xl hover:shadow-[#38BDF8]/5 text-left"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="w-12 h-12 rounded-xl bg-[#1A202C] border border-[#262D3D] flex items-center justify-center text-[#38BDF8] group-hover:scale-105 group-hover:border-[#38BDF8]/50 transition-all">
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono uppercase font-semibold border ${tool.badgeColor}`}>
+                        {tool.badge}
+                      </span>
                     </div>
-                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${tool.badgeColor}`}>
-                      {tool.badge}
-                    </span>
+
+                    <div>
+                      <h3 className="text-lg font-bold text-white group-hover:text-[#38BDF8] transition-colors flex items-center gap-2">
+                        {tool.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-400 mt-2 leading-relaxed">
+                        {tool.description}
+                      </p>
+                    </div>
                   </div>
 
-                  <h3 className="text-base font-semibold text-white group-hover:text-[#38BDF8] transition-colors">
-                    {tool.title}
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                    {tool.description}
-                  </p>
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-[#1A202C] flex items-center justify-between text-xs font-medium text-slate-400 group-hover:text-[#38BDF8]">
-                  <span>Launch Tool</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-16 bg-[#121620]/40 border-y border-[#1A202C]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-            <div className="space-y-3 p-6 rounded-xl bg-[#121620] border border-[#1A202C]">
-              <div className="w-10 h-10 rounded-lg bg-[#0B0D13] border border-[#262D3D] flex items-center justify-center text-[#34D399]">
-                <Lock className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-semibold text-white">
-                100% In-Browser Privacy
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                All validation, formatting, JSONPath evaluation, and comparisons execute locally inside your web browser. No payload data is ever sent across the wire or stored on remote servers.
-              </p>
-            </div>
-
-            <div className="space-y-3 p-6 rounded-xl bg-[#121620] border border-[#1A202C]">
-              <div className="w-10 h-10 rounded-lg bg-[#0B0D13] border border-[#262D3D] flex items-center justify-center text-[#38BDF8]">
-                <Zap className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-semibold text-white">
-                Zero Latency Performance
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Instant parsing and evaluation powered directly by browser JavaScript engines and optimized pure parsers. Handles multi-megabyte payloads without artificial server bottlenecks.
-              </p>
-            </div>
-
-            <div className="space-y-3 p-6 rounded-xl bg-[#121620] border border-[#1A202C]">
-              <div className="w-10 h-10 rounded-lg bg-[#0B0D13] border border-[#262D3D] flex items-center justify-center text-[#A78BFA]">
-                <Code2 className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-semibold text-white">
-                Strict Spec Adherence
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Engineered strictly according to RFC 8259 (JSON), RFC 9535 (JSONPath query semantics), and JSON Schema Draft-07 / 2020-12 specifications via standard Ajv validation.
-              </p>
-            </div>
+                  <div className="mt-6 pt-4 border-t border-[#1A202C] flex items-center justify-between text-xs font-semibold text-slate-400 group-hover:text-[#38BDF8] transition-colors">
+                    <span>Launch Utility</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 text-center max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-          Ready to streamline your JSON workflow?
-        </h2>
-        <p className="text-slate-400 text-sm mt-3 max-w-xl mx-auto">
-          Start formatting and inspecting your data immediately with zero signup required.
-        </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            to="/json-formatter"
-            className="px-6 py-3 rounded-lg bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-slate-950 font-semibold text-sm transition-colors shadow-lg shadow-[#38BDF8]/10"
-          >
-            Launch JSON Formatter
-          </Link>
-          <Link
-            to="/json-validator"
-            className="px-6 py-3 rounded-lg bg-[#121620] hover:bg-[#1A202C] text-white border border-[#262D3D] font-medium text-sm transition-colors"
-          >
-            Open JSON Validator
-          </Link>
+      {/* Why 101 JSON Toolkit Section */}
+      <section className="py-20 border-t border-[#1A202C] bg-[#0E1118]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-6 rounded-2xl bg-[#121620] border border-[#1A202C] space-y-3 text-left">
+              <div className="w-10 h-10 rounded-lg bg-[#34D399]/10 text-[#34D399] flex items-center justify-center">
+                <Lock className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-bold text-white">Guaranteed Privacy</h3>
+              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                All JSON operations happen entirely in your browser memory. No data, API keys, or payloads are ever uploaded to a remote server.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-[#121620] border border-[#1A202C] space-y-3 text-left">
+              <div className="w-10 h-10 rounded-lg bg-[#38BDF8]/10 text-[#38BDF8] flex items-center justify-center">
+                <Zap className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-bold text-white">Instant Latency</h3>
+              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                Zero network roundtrips means multi-megabyte payloads format, minify, and validate without lag or loading spinners.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-[#121620] border border-[#1A202C] space-y-3 text-left">
+              <div className="w-10 h-10 rounded-lg bg-[#A78BFA]/10 text-[#A78BFA] flex items-center justify-center">
+                <Code2 className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-bold text-white">Standard Compliant</h3>
+              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                Strict adherence to RFC 8259 (JSON Grammar), RFC 9535 (JSONPath specification), and JSON Schema Draft-07 standards.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
     </div>
   );
 };
+export default LandingPage;

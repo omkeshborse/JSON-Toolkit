@@ -1,11 +1,43 @@
-# Netlify configuration for JSON Toolkit
+# Netlify configuration for 101 JSON Toolkit
 
 [build]
   command = "npm run build"
   publish = "dist"
 
-# Route all requests to index.html with 200 rewrite for client-side routing
+# Explicit 200 rewrites for known prerendered routes
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/json-formatter"
+  to = "/json-formatter.html"
   status = 200
+
+[[redirects]]
+  from = "/json-validator"
+  to = "/json-validator.html"
+  status = 200
+
+[[redirects]]
+  from = "/json-viewer"
+  to = "/json-viewer.html"
+  status = 200
+
+[[redirects]]
+  from = "/json-minifier"
+  to = "/json-minifier.html"
+  status = 200
+
+[[redirects]]
+  from = "/json-compare"
+  to = "/json-compare.html"
+  status = 200
+
+[[redirects]]
+  from = "/jsonpath"
+  to = "/jsonpath.html"
+  status = 200
+
+[[redirects]]
+  from = "/json-schema"
+  to = "/json-schema.html"
+  status = 200
+
+# Unknown URLs fall through to 404.html (HTTP 404 status)

@@ -1,0 +1,56 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B0D13" />
+      <stop offset="100%" stop-color="#121620" />
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg)" />
+  <rect x="40" y="40" width="1120" height="550" rx="24" fill="none" stroke="#262D3D" stroke-width="2" />
+  
+  <!-- Logo Icon Container -->
+  <rect x="100" y="140" width="96" height="96" rx="20" fill="#161C28" stroke="#38BDF8" stroke-width="2" />
+  <text x="148" y="202" font-family="monospace" font-size="44" font-weight="bold" fill="#38BDF8" text-anchor="middle">{ }</text>
+
+  <!-- Title & Subtitle -->
+  <text x="230" y="185" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="800" fill="#FFFFFF">101 JSON Toolkit</text>
+  <text x="230" y="225" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="500" fill="#94A3B8">High-Performance Client-Side Developer Suite</text>
+
+  <!-- Tool Features Pills -->
+  <g transform="translate(100, 290)">
+    <rect x="0" y="0" width="220" height="52" rx="12" fill="#161C28" stroke="#262D3D" />
+    <text x="110" y="32" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#38BDF8" text-anchor="middle">JSON Formatter</text>
+
+    <rect x="240" y="0" width="220" height="52" rx="12" fill="#161C28" stroke="#262D3D" />
+    <text x="350" y="32" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#34D399" text-anchor="middle">JSON Validator</text>
+
+    <rect x="480" y="0" width="220" height="52" rx="12" fill="#161C28" stroke="#262D3D" />
+    <text x="590" y="32" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#A78BFA" text-anchor="middle">JSON Tree Viewer</text>
+
+    <rect x="720" y="0" width="220" height="52" rx="12" fill="#161C28" stroke="#262D3D" />
+    <text x="830" y="32" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#FBBF24" text-anchor="middle">JSON Minifier</text>
+  </g>
+
+  <g transform="translate(100, 360)">
+    <rect x="0" y="0" width="220" height="52" rx="12" fill="#161C28" stroke="#262D3D" />
+    <text x="110" y="32" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#F43F5E" text-anchor="middle">JSON Compare</text>
+
+    <rect x="240" y="0" width="220" height="52" rx="12" fill="#161C28" stroke="#262D3D" />
+    <text x="350" y="32" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#60A5FA" text-anchor="middle">JSONPath (RFC 9535)</text>
+
+    <rect x="480" y="0" width="240" height="52" rx="12" fill="#161C28" stroke="#262D3D" />
+    <text x="600" y="32" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#2DD4BF" text-anchor="middle">JSON Schema Validator</text>
+
+    <rect x="740" y="0" width="200" height="52" rx="12" fill="#161C28" stroke="#262D3D" />
+    <text x="840" y="32" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#E2E8F0" text-anchor="middle">Deterministic Smart Fix</text>
+  </g>
+
+  <!-- Bottom Badges -->
+  <text x="100" y="520" font-family="system-ui, sans-serif" font-size="18" font-weight="500" fill="#64748B">✓ 100% Client-Side Privacy</text>
+  <text x="380" y="520" font-family="system-ui, sans-serif" font-size="18" font-weight="500" fill="#64748B">✓ Zero Server Telemetry</text>
+  <text x="660" y="520" font-family="system-ui, sans-serif" font-size="18" font-weight="500" fill="#64748B">✓ RFC 8259 Standard Compliant</text>
+</svg>

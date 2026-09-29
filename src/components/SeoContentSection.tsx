@@ -189,9 +189,11 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
                 className="rounded-lg bg-[#121620] border border-[#1A202C] overflow-hidden"
               >
                 <button
+                  type="button"
                   onClick={() => toggleFaq(idx)}
                   className="w-full p-4 text-left flex items-center justify-between gap-4 text-sm font-semibold text-white hover:text-[#38BDF8] transition-colors cursor-pointer"
                   aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${idx}`}
                 >
                   <span>{faq.question}</span>
                   <ChevronDown
@@ -200,11 +202,15 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
                     }`}
                   />
                 </button>
-                {isOpen && (
-                  <div className="px-4 pb-4 pt-1 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-[#1A202C]/60">
-                    {faq.answer}
-                  </div>
-                )}
+                <div
+                  id={`faq-answer-${idx}`}
+                  hidden={!isOpen}
+                  className={`px-4 pb-4 pt-1 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-[#1A202C]/60 ${
+                    !isOpen ? 'hidden' : ''
+                  }`}
+                >
+                  {faq.answer}
+                </div>
               </div>
             );
           })}
