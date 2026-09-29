@@ -5,20 +5,19 @@ import { CodeEditor } from '../components/CodeEditor';
 import { SmartFixBanner } from '../components/SmartFixBanner';
 import { SeoContentSection } from '../components/SeoContentSection';
 import { SEO_DATA_BY_PATH } from '../data/seoContent';
-import { compareJson, DiffResult, DiffType } from '../utils/jsonDiff';
+import { compareJson, DiffResult } from '../utils/jsonDiff';
 import { JsonEngine } from '../utils/jsonEngine';
 import {
   GitCompare,
-  Plus,
-  Minus,
-  RotateCw,
   Trash2,
   RotateCcw,
   CheckCircle2,
-  AlertCircle,
-  Layers,
   ArrowRightLeft,
   Search,
+  Minimize2,
+  Maximize2,
+  Expand,
+  Shrink,
 } from 'lucide-react';
 
 const SAMPLE_A = `{
@@ -51,12 +50,15 @@ const SAMPLE_B = `{
 export const JsonComparePage: React.FC<{ onShowToast: (msg: string, type?: 'success' | 'error' | 'info') => void }> = ({
   onShowToast,
 }) => {
-  const [jsonA, setJsonA] = useState<string>('');
-  const [jsonB, setJsonB] = useState<string>('');
+  const [jsonA, setJsonA] = useState<string>(SAMPLE_A);
+  const [jsonB, setJsonB] = useState<string>(SAMPLE_B);
   const [undoA, setUndoA] = useState<string | null>(null);
   const [undoB, setUndoB] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<'all' | 'added' | 'removed' | 'changed'>('all');
   const [searchPath, setSearchPath] = useState('');
+
+  // Expand & Fullscreen UI mode
+  const [workspaceMode, setWorkspaceMode] = useState<'normal' | 'expanded' | 'fullscreen'>('normal');
 
   // Validate Side A and Side B independently using shared JsonEngine
   const validationA = useMemo(() => {
@@ -128,6 +130,12 @@ export const JsonComparePage: React.FC<{ onShowToast: (msg: string, type?: 'succ
     }
   };
 
+  const isFullscreen = workspaceMode === 'fullscreen';
+  const isExpanded = workspaceMode === 'expanded';
+
+  const toggleExpand = () => setWorkspaceMode((prev) => (prev === 'expanded' ? 'normal' : 'expanded'));
+  const toggleFullscreen = () => setWorkspaceMode((prev) => (prev === 'fullscreen' ? 'normal' : 'fullscreen'));
+
   // Filtered diff entries
   const filteredEntries = useMemo(() => {
     if (!diffResult) return [];
@@ -140,7 +148,11 @@ export const JsonComparePage: React.FC<{ onShowToast: (msg: string, type?: 'succ
   }, [diffResult, activeFilter, searchPath]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col w-full">
+    <div
+      className={`mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col w-full transition-all duration-200 ${
+        isExpanded ? 'max-w-[96vw]' : 'max-w-7xl'
+      }`}
+    >
       <Breadcrumb items={[{ label: 'JSON Compare' }]} />
 
       <ToolHeader
@@ -175,6 +187,43 @@ export const JsonComparePage: React.FC<{ onShowToast: (msg: string, type?: 'succ
           </>
         }
       />
+
+      {/* Workspace Control Bar with Expand/Fullscreen */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#121620] border border-[#1A202C] rounded-xl mb-4 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-slate-200">Comparison Workspace</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {!isFullscreen && (
+            <button
+              type="button"
+              onClick={toggleExpand}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                isExpanded
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+                  : 'bg-[#1A202C] hover:bg-[#262D3D] text-slate-300 hover:text-white border-[#262D3D]'
+              }`}
+            >
+              {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+              <span>{isExpanded ? 'Restore' : 'Expand'}</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-sm ${
+              isFullscreen
+                ? 'bg-[#38BDF8] text-slate-950 hover:bg-[#38BDF8]/90'
+                : 'bg-[#1A202C] hover:bg-[#262D3D] text-slate-200 hover:text-white border border-[#262D3D]'
+            }`}
+          >
+            {isFullscreen ? <Shrink className="w-3.5 h-3.5" /> : <Expand className="w-3.5 h-3.5" />}
+            <span>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+          </button>
+        </div>
+      </div>
 
       {/* Diff Summary Bar */}
       {diffResult && (
@@ -254,40 +303,67 @@ export const JsonComparePage: React.FC<{ onShowToast: (msg: string, type?: 'succ
         </div>
       </div>
 
-      {/* Editors Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-        <div className="flex flex-col min-h-[380px]">
-          <CodeEditor
-            title="Original JSON (A)"
-            value={jsonA}
-            onChange={(val) => {
-              setJsonA(val);
-              if (undoA !== null) setUndoA(null);
-            }}
-            placeholder="Paste original JSON..."
-            error={validationA.error}
-            errorLine={validationA.line}
-            diagnostics={validationA.diagnostics}
-            canSmartFix={Boolean(validationA.candidate && validationA.candidate.isValid && validationA.candidate.confidence !== 'low')}
-            onSmartFix={() => validationA.candidate && handleApplyFixA(validationA.candidate.repaired)}
-          />
-        </div>
+      {/* Editors Grid (Equal Height with internal scrolling) */}
+      <div
+        className={
+          isFullscreen
+            ? 'fixed inset-0 z-50 flex flex-col bg-[#0B0D13] w-screen h-screen overflow-hidden p-3 sm:p-4'
+            : 'w-full mb-6'
+        }
+      >
+        {isFullscreen && (
+          <div className="flex items-center justify-between px-3 py-2 bg-[#121620] border border-[#262D3D] rounded-xl text-xs mb-3 shrink-0">
+            <span className="font-semibold text-white">JSON Compare Workspace (Side-by-Side View)</span>
+            <button
+              onClick={() => setWorkspaceMode('normal')}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#1A202C] hover:bg-[#262D3D] text-slate-200 hover:text-white border border-[#262D3D] font-medium"
+            >
+              <Shrink className="w-3.5 h-3.5 text-[#38BDF8]" />
+              <span>Exit Fullscreen</span>
+            </button>
+          </div>
+        )}
 
-        <div className="flex flex-col min-h-[380px]">
-          <CodeEditor
-            title="Modified JSON (B)"
-            value={jsonB}
-            onChange={(val) => {
-              setJsonB(val);
-              if (undoB !== null) setUndoB(null);
-            }}
-            placeholder="Paste modified JSON..."
-            error={validationB.error}
-            errorLine={validationB.line}
-            diagnostics={validationB.diagnostics}
-            canSmartFix={Boolean(validationB.candidate && validationB.candidate.isValid && validationB.candidate.confidence !== 'low')}
-            onSmartFix={() => validationB.candidate && handleApplyFixB(validationB.candidate.repaired)}
-          />
+        <div
+          className={`grid grid-cols-1 lg:grid-cols-2 gap-4 ${
+            isFullscreen ? 'flex-1 min-h-0' : 'h-[clamp(440px,58vh,680px)]'
+          }`}
+        >
+          <div className="w-full h-full min-h-0 flex flex-col">
+            <CodeEditor
+              title="Original JSON (A)"
+              value={jsonA}
+              onChange={(val) => {
+                setJsonA(val);
+                if (undoA !== null) setUndoA(null);
+              }}
+              placeholder="Paste original JSON..."
+              error={validationA.error}
+              errorLine={validationA.line}
+              diagnostics={validationA.diagnostics}
+              canSmartFix={Boolean(validationA.candidate && validationA.candidate.isValid && validationA.candidate.confidence !== 'low')}
+              onSmartFix={() => validationA.candidate && handleApplyFixA(validationA.candidate.repaired)}
+              heightClass="h-full"
+            />
+          </div>
+
+          <div className="w-full h-full min-h-0 flex flex-col">
+            <CodeEditor
+              title="Modified JSON (B)"
+              value={jsonB}
+              onChange={(val) => {
+                setJsonB(val);
+                if (undoB !== null) setUndoB(null);
+              }}
+              placeholder="Paste modified JSON..."
+              error={validationB.error}
+              errorLine={validationB.line}
+              diagnostics={validationB.diagnostics}
+              canSmartFix={Boolean(validationB.candidate && validationB.candidate.isValid && validationB.candidate.confidence !== 'low')}
+              onSmartFix={() => validationB.candidate && handleApplyFixB(validationB.candidate.repaired)}
+              heightClass="h-full"
+            />
+          </div>
         </div>
       </div>
 
@@ -318,58 +394,67 @@ export const JsonComparePage: React.FC<{ onShowToast: (msg: string, type?: 'succ
           <div className="overflow-x-auto max-h-96">
             {filteredEntries.length === 0 ? (
               <div className="p-8 text-center text-xs text-slate-500">
-                No differences match the current filter.
+                No differences found matching your current filter.
               </div>
             ) : (
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left border-collapse text-xs font-mono">
                 <thead>
-                  <tr className="border-b border-[#1A202C] bg-[#0E131F] text-slate-400 font-mono text-[11px]">
-                    <th className="p-3">Type</th>
-                    <th className="p-3">JSON Path</th>
-                    <th className="p-3">Original Value (A)</th>
-                    <th className="p-3">Modified Value (B)</th>
+                  <tr className="border-b border-[#1A202C] bg-[#0F1117] text-slate-400 text-[11px]">
+                    <th className="py-2.5 px-4 font-semibold">Type</th>
+                    <th className="py-2.5 px-4 font-semibold">JSON Path</th>
+                    <th className="py-2.5 px-4 font-semibold">Side A (Original)</th>
+                    <th className="py-2.5 px-4 font-semibold">Side B (Modified)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1A202C] font-mono">
-                  {filteredEntries.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-[#161C28] transition-colors">
-                      <td className="p-3">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${
-                            item.type === 'added'
-                              ? 'bg-[#34D399]/15 text-[#34D399] border-[#34D399]/30'
-                              : item.type === 'removed'
-                              ? 'bg-[#F43F5E]/15 text-[#F43F5E] border-[#F43F5E]/30'
-                              : 'bg-[#FBBF24]/15 text-[#FBBF24] border-[#FBBF24]/30'
-                          }`}
-                        >
-                          {item.type === 'added' && <Plus className="w-3 h-3" />}
-                          {item.type === 'removed' && <Minus className="w-3 h-3" />}
-                          {item.type === 'changed' && <RotateCw className="w-3 h-3" />}
-                          <span>{item.type}</span>
-                        </span>
-                      </td>
-                      <td className="p-3 text-slate-200 font-semibold">{item.path}</td>
-                      <td className="p-3 text-rose-300">
-                        {item.oldValue !== undefined ? (
-                          <span className="bg-rose-950/20 px-1.5 py-0.5 rounded border border-rose-500/20">
-                            {JSON.stringify(item.oldValue)}
-                          </span>
-                        ) : (
-                          <span className="text-slate-600 italic">undefined</span>
-                        )}
-                      </td>
-                      <td className="p-3 text-emerald-300">
-                        {item.newValue !== undefined ? (
-                          <span className="bg-emerald-950/20 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                            {JSON.stringify(item.newValue)}
-                          </span>
-                        ) : (
-                          <span className="text-slate-600 italic">undefined</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                <tbody className="divide-y divide-[#1A202C] text-slate-300">
+                  {filteredEntries.map((entry, index) => {
+                    const isAdded = entry.type === 'added';
+                    const isRemoved = entry.type === 'removed';
+                    const isChanged = entry.type === 'changed';
+
+                    return (
+                      <tr
+                        key={index}
+                        className={`hover:bg-[#161B26] transition-colors ${
+                          isAdded
+                            ? 'bg-[#34D399]/5'
+                            : isRemoved
+                            ? 'bg-[#F43F5E]/5'
+                            : isChanged
+                            ? 'bg-[#FBBF24]/5'
+                            : ''
+                        }`}
+                      >
+                        <td className="py-2 px-4 whitespace-nowrap">
+                          {isAdded && (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-[#34D399]/20 text-[#34D399] border border-[#34D399]/30">
+                              + Added
+                            </span>
+                          )}
+                          {isRemoved && (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-[#F43F5E]/20 text-[#F43F5E] border border-[#F43F5E]/30">
+                              - Removed
+                            </span>
+                          )}
+                          {isChanged && (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-[#FBBF24]/20 text-[#FBBF24] border border-[#FBBF24]/30">
+                              ~ Changed
+                            </span>
+                          )}
+                        </td>
+
+                        <td className="py-2 px-4 text-slate-300 font-semibold">{entry.path}</td>
+
+                        <td className="py-2 px-4 text-slate-400 max-w-xs truncate">
+                          {entry.oldValue !== undefined ? JSON.stringify(entry.oldValue) : <span className="text-slate-600">—</span>}
+                        </td>
+
+                        <td className="py-2 px-4 text-slate-200 max-w-xs truncate">
+                          {entry.newValue !== undefined ? JSON.stringify(entry.newValue) : <span className="text-slate-600">—</span>}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -381,3 +466,4 @@ export const JsonComparePage: React.FC<{ onShowToast: (msg: string, type?: 'succ
     </div>
   );
 };
+export default JsonComparePage;

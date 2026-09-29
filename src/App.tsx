@@ -17,6 +17,8 @@ import { JsonSchemaPage } from './pages/JsonSchemaPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { SEO_DATA_BY_PATH } from './data/seoContent';
 
+import { WorkspaceProvider } from './context/WorkspaceContext';
+
 function AppContent() {
   const { path } = useRouter();
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -197,7 +199,9 @@ function AppContent() {
 export default function App() {
   return (
     <RouterProvider>
-      <AppContent />
+      <WorkspaceProvider>
+        <AppContent />
+      </WorkspaceProvider>
     </RouterProvider>
   );
 }

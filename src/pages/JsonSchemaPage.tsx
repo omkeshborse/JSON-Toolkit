@@ -12,9 +12,10 @@ import {
   RotateCcw,
   Trash2,
   Play,
-  Layers,
-  Copy,
-  Info,
+  Minimize2,
+  Maximize2,
+  Expand,
+  Shrink,
 } from 'lucide-react';
 
 const SAMPLE_DATA = `{
@@ -55,8 +56,11 @@ const SAMPLE_SCHEMA = `{
 export const JsonSchemaPage: React.FC<{ onShowToast: (msg: string, type?: 'success' | 'error' | 'info') => void }> = ({
   onShowToast,
 }) => {
-  const [dataText, setDataText] = useState<string>('');
-  const [schemaText, setSchemaText] = useState<string>('');
+  const [dataText, setDataText] = useState<string>(SAMPLE_DATA);
+  const [schemaText, setSchemaText] = useState<string>(SAMPLE_SCHEMA);
+
+  // Common Expand & Fullscreen UI mode
+  const [workspaceMode, setWorkspaceMode] = useState<'normal' | 'expanded' | 'fullscreen'>('normal');
 
   // Parse state
   const dataParse = useMemo(() => {
@@ -109,8 +113,18 @@ export const JsonSchemaPage: React.FC<{ onShowToast: (msg: string, type?: 'succe
     onShowToast('Cleared editors', 'info');
   };
 
+  const isFullscreen = workspaceMode === 'fullscreen';
+  const isExpanded = workspaceMode === 'expanded';
+
+  const toggleExpand = () => setWorkspaceMode((prev) => (prev === 'expanded' ? 'normal' : 'expanded'));
+  const toggleFullscreen = () => setWorkspaceMode((prev) => (prev === 'fullscreen' ? 'normal' : 'fullscreen'));
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col w-full">
+    <div
+      className={`mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col w-full transition-all duration-200 ${
+        isExpanded ? 'max-w-[96vw]' : 'max-w-7xl'
+      }`}
+    >
       <Breadcrumb items={[{ label: 'JSON Schema' }]} />
 
       <ToolHeader
@@ -122,7 +136,7 @@ export const JsonSchemaPage: React.FC<{ onShowToast: (msg: string, type?: 'succe
           <>
             <button
               onClick={handleValidate}
-              className="px-3 py-1.5 rounded-md text-xs font-semibold bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-slate-950 flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-md text-xs font-semibold bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-slate-950 flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>Validate Schema</span>
@@ -145,6 +159,49 @@ export const JsonSchemaPage: React.FC<{ onShowToast: (msg: string, type?: 'succe
         }
       />
 
+      {/* Workspace Control Bar with Expand/Fullscreen */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#121620] border border-[#1A202C] rounded-xl mb-4 text-xs">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleValidate}
+            className="px-3.5 py-1.5 rounded-lg bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-slate-950 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+          >
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span>Validate Schema</span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {!isFullscreen && (
+            <button
+              type="button"
+              onClick={toggleExpand}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                isExpanded
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+                  : 'bg-[#1A202C] hover:bg-[#262D3D] text-slate-300 hover:text-white border-[#262D3D]'
+              }`}
+            >
+              {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+              <span>{isExpanded ? 'Restore' : 'Expand'}</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-sm ${
+              isFullscreen
+                ? 'bg-[#38BDF8] text-slate-950 hover:bg-[#38BDF8]/90'
+                : 'bg-[#1A202C] hover:bg-[#262D3D] text-slate-200 hover:text-white border border-[#262D3D]'
+            }`}
+          >
+            {isFullscreen ? <Shrink className="w-3.5 h-3.5" /> : <Expand className="w-3.5 h-3.5" />}
+            <span>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Validation Result Status Banner */}
       <div className="mb-4">
         {validationResult && validationResult.isValid && (
@@ -158,65 +215,73 @@ export const JsonSchemaPage: React.FC<{ onShowToast: (msg: string, type?: 'succe
 
         {validationResult && !validationResult.isValid && (
           <div className="p-4 rounded-xl bg-[#F43F5E]/10 border border-[#F43F5E]/30 text-white space-y-2">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#F43F5E]">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>Schema Validation Failed ({validationResult.errors.length} violations found):</span>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-[#F43F5E] shrink-0" />
+              <span className="font-semibold text-sm text-[#F43F5E]">
+                Schema Validation Failed ({validationResult.errors.length} error{validationResult.errors.length > 1 ? 's' : ''})
+              </span>
             </div>
-
-            <div className="space-y-1.5 font-mono text-xs">
+            <div className="space-y-1.5 pt-1">
               {validationResult.errors.map((err, idx) => (
-                <div
-                  key={idx}
-                  className="p-2.5 rounded bg-[#0B0D13]/80 border border-[#F43F5E]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
-                >
-                  <div>
-                    <span className="text-white font-semibold">{err.instancePath || 'root'}</span>
-                    <span className="text-slate-400 font-sans ml-2">{err.message}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[11px]">
-                    <span className="px-1.5 py-0.5 rounded bg-[#F43F5E]/20 text-[#F43F5E]">
-                      {err.keyword}
-                    </span>
-                    <span className="text-slate-500 font-mono">{err.schemaPath}</span>
-                  </div>
+                <div key={idx} className="text-xs font-mono bg-[#0B0D13]/60 p-2 rounded border border-[#F43F5E]/20 flex items-start gap-2">
+                  <span className="text-[#F43F5E] font-semibold">{err.instancePath || '/'}:</span>
+                  <span className="text-slate-300">{err.message}</span>
                 </div>
               ))}
             </div>
           </div>
         )}
-
-        {(Boolean(dataParse.error) || Boolean(schemaParse.error)) && (
-          <div className="p-3 rounded-lg bg-[#FBBF24]/10 border border-[#FBBF24]/30 text-xs text-[#FBBF24] flex items-center gap-2">
-            <Info className="w-4 h-4 shrink-0" />
-            <span>
-              {dataParse.error ? `Data syntax error: ${dataParse.error}` : ''}
-              {dataParse.error && schemaParse.error ? ' | ' : ''}
-              {schemaParse.error ? `Schema syntax error: ${schemaParse.error}` : ''}
-            </span>
-          </div>
-        )}
       </div>
 
-      {/* Editors Grid: Left Data, Right Schema */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1">
-        <div className="flex flex-col min-h-[460px]">
-          <CodeEditor
-            title="JSON Data (Instance Payload)"
-            value={dataText}
-            onChange={setDataText}
-            placeholder="Paste JSON data to validate..."
-            error={dataParse.error}
-          />
-        </div>
+      {/* Side-by-side Equal-Height Editors Grid */}
+      <div
+        className={
+          isFullscreen
+            ? 'fixed inset-0 z-50 flex flex-col bg-[#0B0D13] w-screen h-screen overflow-hidden p-3 sm:p-4'
+            : 'w-full mb-6'
+        }
+      >
+        {isFullscreen && (
+          <div className="flex items-center justify-between px-3 py-2 bg-[#121620] border border-[#262D3D] rounded-xl text-xs mb-3 shrink-0">
+            <span className="font-semibold text-white">JSON Schema Workspace (Side-by-Side View)</span>
+            <button
+              onClick={() => setWorkspaceMode('normal')}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#1A202C] hover:bg-[#262D3D] text-slate-200 hover:text-white border border-[#262D3D] font-medium"
+            >
+              <Shrink className="w-3.5 h-3.5 text-[#38BDF8]" />
+              <span>Exit Fullscreen</span>
+            </button>
+          </div>
+        )}
 
-        <div className="flex flex-col min-h-[460px]">
-          <CodeEditor
-            title="JSON Schema Definition"
-            value={schemaText}
-            onChange={setSchemaText}
-            placeholder="Paste JSON Schema (Draft-07 / 2020-12)..."
-            error={schemaParse.error}
-          />
+        <div
+          className={`grid grid-cols-1 lg:grid-cols-2 gap-4 ${
+            isFullscreen ? 'flex-1 min-h-0' : 'h-[clamp(440px,58vh,680px)]'
+          }`}
+        >
+          {/* JSON Instance Payload */}
+          <div className="w-full h-full min-h-0 flex flex-col">
+            <CodeEditor
+              title="JSON Instance (Data)"
+              value={dataText}
+              onChange={setDataText}
+              placeholder="Paste JSON data to validate against schema..."
+              error={dataParse.error}
+              heightClass="h-full"
+            />
+          </div>
+
+          {/* JSON Schema Definition */}
+          <div className="w-full h-full min-h-0 flex flex-col">
+            <CodeEditor
+              title="JSON Schema (Draft-07)"
+              value={schemaText}
+              onChange={setSchemaText}
+              placeholder="Paste JSON Schema definition here..."
+              error={schemaParse.error}
+              heightClass="h-full"
+            />
+          </div>
         </div>
       </div>
 
@@ -224,3 +289,4 @@ export const JsonSchemaPage: React.FC<{ onShowToast: (msg: string, type?: 'succe
     </div>
   );
 };
+export default JsonSchemaPage;
