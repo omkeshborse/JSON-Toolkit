@@ -77,16 +77,16 @@ function prerender(): void {
     let pageHtml = baseHtml;
 
     if (hasHeadPlaceholder) {
-      pageHtml = pageHtml.replace('<!--seo-head-->', headHtml);
+      pageHtml = pageHtml.replace('<!--seo-head-->', () => headHtml);
     } else {
       // Fallback: replace title if present or inject before </head>
-      pageHtml = pageHtml.replace(/<title>.*?<\/title>/i, headHtml);
+      pageHtml = pageHtml.replace(/<title>.*?<\/title>/i, () => headHtml);
     }
 
     if (hasRootPlaceholder) {
-      pageHtml = pageHtml.replace('<!--seo-root-->', bodyMarkup);
+      pageHtml = pageHtml.replace('<!--seo-root-->', () => bodyMarkup);
     } else {
-      pageHtml = pageHtml.replace('<div id="root"></div>', `<div id="root">${bodyMarkup}</div>`);
+      pageHtml = pageHtml.replace('<div id="root"></div>', () => `<div id="root">${bodyMarkup}</div>`);
     }
 
     const filename = route === '/' ? 'index.html' : `${route.slice(1)}.html`;
@@ -115,15 +115,15 @@ function prerender(): void {
 
   let page404Html = baseHtml;
   if (hasHeadPlaceholder) {
-    page404Html = page404Html.replace('<!--seo-head-->', head404Html);
+    page404Html = page404Html.replace('<!--seo-head-->', () => head404Html);
   } else {
-    page404Html = page404Html.replace(/<title>.*?<\/title>/i, head404Html);
+    page404Html = page404Html.replace(/<title>.*?<\/title>/i, () => head404Html);
   }
 
   if (hasRootPlaceholder) {
-    page404Html = page404Html.replace('<!--seo-root-->', body404Markup);
+    page404Html = page404Html.replace('<!--seo-root-->', () => body404Markup);
   } else {
-    page404Html = page404Html.replace('<div id="root"></div>', `<div id="root">${body404Markup}</div>`);
+    page404Html = page404Html.replace('<div id="root"></div>', () => `<div id="root">${body404Markup}</div>`);
   }
 
   fs.writeFileSync(path.resolve(distDir, '404.html'), page404Html, 'utf-8');
