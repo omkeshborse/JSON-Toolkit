@@ -5,6 +5,7 @@ import { CodeEditor } from '../components/CodeEditor';
 import { SmartFixBanner } from '../components/SmartFixBanner';
 import { SeoContentSection } from '../components/SeoContentSection';
 import { WorkspaceShell } from '../components/WorkspaceShell';
+import { ResizableEditorSplit } from '../components/ResizableEditorSplit';
 import { SEO_DATA_BY_PATH } from '../data/seoContent';
 import { SAMPLE_DATASETS } from '../data/samples';
 import { JsonEngine } from '../utils/jsonEngine';
@@ -333,14 +334,10 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
           </div>
         )}
 
-        {/* Side-by-side Equal-Height Editors Grid */}
-        <div
-          className={`grid grid-cols-1 lg:grid-cols-2 gap-4 ${
-            isFullscreen ? 'flex-1 min-h-0' : 'h-[clamp(440px,58vh,680px)]'
-          }`}
-        >
-          {/* Input Editor */}
-          <div className="w-full h-full min-h-0 flex flex-col">
+        {/* Side-by-side Resizable Editors Split */}
+        <ResizableEditorSplit
+          isFullscreen={isFullscreen}
+          left={
             <CodeEditor
               key={`input-${activeTabId}`}
               title={`Input JSON (${activeTab.title})`}
@@ -360,10 +357,8 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
               onSmartFix={() => candidate && handleApplySmartFix(candidate.repaired)}
               heightClass="h-full"
             />
-          </div>
-
-          {/* Formatted Output Editor */}
-          <div className="w-full h-full min-h-0 flex flex-col">
+          }
+          right={
             <CodeEditor
               key={`output-${activeTabId}`}
               title={`Formatted Output (${activeTab.title})`}
@@ -374,8 +369,8 @@ export const JsonFormatterPage: React.FC<{ onShowToast: (msg: string, type?: 'su
               heightClass="h-full"
               extraActions={outputDownloadAction}
             />
-          </div>
-        </div>
+          }
+        />
       </WorkspaceShell>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
