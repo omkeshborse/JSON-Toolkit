@@ -20,6 +20,55 @@ interface SeoContentSectionProps {
   content: ToolSeoData;
 }
 
+/**
+ * Parses markdown-style links [Anchor Text](/path) into accessible React router Link components.
+ */
+function renderFormattedText(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    const anchorText = match[1];
+    const href = match[2];
+
+    if (href.startsWith('/')) {
+      parts.push(
+        <Link
+          key={`${match.index}-${href}`}
+          to={href}
+          className="text-[#38BDF8] hover:underline font-medium inline-flex items-center gap-0.5"
+        >
+          {anchorText}
+        </Link>
+      );
+    } else {
+      parts.push(
+        <a
+          key={`${match.index}-${href}`}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#38BDF8] hover:underline font-medium"
+        >
+          {anchorText}
+        </a>
+      );
+    }
+    lastIndex = linkRegex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : text;
+}
+
 export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
@@ -45,7 +94,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
         <div className="space-y-3 max-w-4xl">
           {content.whatIs.paragraphs.map((para, idx) => (
             <p key={idx} className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              {para}
+              {renderFormattedText(para)}
             </p>
           ))}
         </div>
@@ -205,7 +254,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
               <div className="space-y-3 max-w-4xl">
                 {sec.paragraphs.map((p, pIdx) => (
                   <p key={pIdx} className="text-slate-300 text-sm sm:text-base leading-relaxed">
-                    {p}
+                    {renderFormattedText(p)}
                   </p>
                 ))}
               </div>
@@ -223,7 +272,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
                   <Info className="w-4 h-4 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-semibold block mb-0.5">{sec.callout.title}</span>
-                    <span className="text-slate-300">{sec.callout.text}</span>
+                    <span className="text-slate-300">{renderFormattedText(sec.callout.text)}</span>
                   </div>
                 </div>
               )}
@@ -270,7 +319,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
                 {concept.term}
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                {concept.explanation}
+                {renderFormattedText(concept.explanation)}
               </p>
             </div>
           ))}
@@ -312,7 +361,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
                     !isOpen ? 'hidden' : ''
                   }`}
                 >
-                  {faq.answer}
+                  {renderFormattedText(faq.answer)}
                 </div>
               </div>
             );

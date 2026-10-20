@@ -138,7 +138,7 @@ export function getRouteHead(path: string): RouteHeadData {
           name: faq.question,
           acceptedAnswer: {
             '@type': 'Answer',
-            text: faq.answer,
+            text: faq.answer.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'),
           },
         })),
       });

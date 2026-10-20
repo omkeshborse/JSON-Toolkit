@@ -205,7 +205,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         paragraphs: [
           'A frequent challenge when copying JSON from application logs, CloudWatch, Datadog, or database queries is double-serialized JSON. In these payloads, quotes are escaped as \\" and the entire structure is wrapped inside an outer string.',
           'Before formatting, an escaped string must be deserialized: in JavaScript, run JSON.parse(str) on the outer string to obtain the true object, or strip leading and trailing quotes and replace \\" with " prior to formatting.',
-          'If your JSON fails to format because of syntax errors, broken quotes, or unquoted keys, use our JSON Validator to locate syntax errors by exact line and column, or apply deterministic automated fixes.'
+          'If your JSON fails to format because of syntax errors, broken quotes, or unquoted keys, use our [JSON Validator](/json-validator) to locate syntax errors by exact line and column, or apply deterministic automated fixes.'
         ]
       }
     ],
@@ -235,11 +235,11 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         },
         {
           term: 'Minification (Compacting)',
-          explanation: 'Strips all non-essential whitespace characters outside string literals to reduce character count and network payload size for production APIs.'
+          explanation: 'Strips all non-essential whitespace characters outside string literals to reduce character count and network payload size for production APIs. Compare with our [JSON Minifier](/json-minifier).'
         },
         {
           term: 'Interactive Tree Exploration',
-          explanation: 'When payloads contain thousands of nested records, expanding and collapsing nodes in our JSON Tree Viewer makes navigating deep structures faster than scrolling.'
+          explanation: 'When payloads contain thousands of nested records, expanding and collapsing nodes in our [JSON Tree Viewer](/json-viewer) makes navigating deep structures faster than scrolling.'
         }
       ]
     },
@@ -256,11 +256,11 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         },
         {
           question: 'Why does my JSON fail to format?',
-          answer: 'A formatter requires valid RFC 8259 syntax to parse the input tokens. If your payload contains syntax errors such as trailing commas, single quotes, or unquoted property names, formatting will fail. You can open our JSON Validator to diagnose the exact line error or click Auto-Fix Syntax to repair it.'
+          answer: 'A formatter requires valid RFC 8259 syntax to parse the input tokens. If your payload contains syntax errors such as trailing commas, single quotes, or unquoted property names, formatting will fail. You can open our [JSON Validator](/json-validator) to diagnose the exact line error or click Auto-Fix Syntax to repair it.'
         },
         {
           question: 'What is the difference between JSON formatting and JSON minification?',
-          answer: 'Formatting adds indentation and line breaks for human readability during development and debugging. Minification strips all unnecessary whitespace to minimize payload size and bandwidth consumption in production APIs. Use our JSON Minifier when preparing payloads for network transmission.'
+          answer: 'Formatting adds indentation and line breaks for human readability during development and debugging. Minification strips all unnecessary whitespace to minimize payload size and bandwidth consumption in production APIs. Use our [JSON Minifier](/json-minifier) when preparing payloads for network transmission.'
         },
         {
           question: 'Is my data private when formatting in this tool?',
@@ -459,7 +459,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         paragraphs: [
           'Syntax validation (RFC 8259) confirms that a document is well-formed JSON text: it checks whether quotation marks match, braces balance, commas separate items correctly, and data types are valid primitives.',
           'In contrast, JSON Schema validation evaluates whether a syntactically valid document conforms to a specific business data model contract. A JSON Schema defines required fields, allowed numeric ranges, string regex patterns, enum sets, and array length boundaries.',
-          'A document must be syntactically valid before it can be checked against a JSON Schema. Once your syntax is verified here, use our dedicated JSON Schema Validator to enforce schema rules.'
+          'A document must be syntactically valid before it can be evaluated against a schema. Once your syntax is verified here, use our dedicated [JSON Schema Validator](/json-schema) to validate required properties and data types.'
         ]
       }
     ],
@@ -518,7 +518,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         },
         {
           question: 'What is the difference between syntax validation and JSON Schema validation?',
-          answer: 'Syntax validation confirms that a file is legal RFC 8259 JSON that any standard parser can read. JSON Schema validation verifies that the data matches specific business rules, such as required fields, numeric minimums, email formats, and enum choices. Use our JSON Schema Validator after confirming basic syntax.'
+          answer: 'Syntax validation confirms that a file is legal RFC 8259 JSON that any standard parser can read. JSON Schema validation verifies that the data matches specific business rules, such as required fields, numeric minimums, email formats, and enum choices. Use our [JSON Schema Validator](/json-schema) after confirming basic syntax, or use our [JSON Formatter](/json-formatter) to clean up layout.'
         },
         {
           question: 'Can I include comments in JSON files?',
@@ -568,7 +568,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
       heading: 'Why Use an Interactive JSON Tree Viewer?',
       paragraphs: [
         'Modern web applications, cloud APIs, and telemetry pipelines frequently return payloads containing hundreds or thousands of nested records. Inspecting large JSON documents in a plain text editor can be challenging due to deeply nested braces and excessive vertical scrolling.',
-        'An interactive JSON tree viewer parses the document into a visual object hierarchy. Objects and arrays become collapsible branch nodes, while primitive strings, numbers, booleans, and nulls are displayed with explicit type indicators. This enables developers to understand high-level structural models rapidly.'
+        'An interactive JSON tree viewer parses the document into a visual object hierarchy. Objects and arrays become collapsible branch nodes, while primitive strings, numbers, booleans, and nulls are displayed with explicit type indicators. Once you locate a target property in the tree, you can copy its path directly into our [JSONPath Query Evaluator](/jsonpath) to filter and extract matching items programmatically.'
       ]
     },
     howTo: {
@@ -633,6 +633,36 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         }
       ]
     },
+    detailedSections: [
+      {
+        heading: 'Interactive Tree Navigation vs. Plain Text JSON',
+        badge: 'Structural Visualizer',
+        paragraphs: [
+          'While a [JSON Formatter](/json-formatter) indents code for readability, reading multi-megabyte payloads in a plain text editor requires scrolling through thousands of lines of brackets. If an API returns an array of 500 customer records, text view forces you to scroll through every single record to reach the next property.',
+          'An interactive tree visualizer treats JSON as a living data graph. You can collapse entire collections into single summary lines (showing item counts and keys), search for specific strings across all nesting depths, and expand only the exact branch under investigation.',
+          'If you need to edit or reformat the raw text instead of visually exploring, you can switch back to the [JSON Formatter](/json-formatter) at any time.'
+        ],
+        callout: {
+          type: 'info',
+          title: 'Memory-Efficient Node Rendering',
+          text: 'Our client-side tree visualizer only expands nodes on demand. This keeps your browser fast and responsive even when navigating deeply nested cloud telemetry payloads.'
+        }
+      },
+      {
+        heading: 'From Visual Path Discovery to Programmatic JSONPath',
+        badge: 'Workflow Integration',
+        paragraphs: [
+          'A major practical challenge in API development is determining the exact property path needed to extract a field in code or configuration files. In deep structures, counting array indices and property chains manually is prone to off-by-one errors.',
+          'Hovering over any node in this tree viewer reveals its complete dot-and-bracket notation path (e.g. "departments[0].teams[0].leads[1]"). Clicking the copy icon transfers this path directly to your clipboard.',
+          'You can take these discovered paths straight into our [JSONPath Query Evaluator](/jsonpath) to author filter expressions, extract entire arrays, or run automated assertions for your integration tests.'
+        ],
+        callout: {
+          type: 'tip',
+          title: 'Complementary Querying',
+          text: 'Use the JSON Tree Viewer for initial visual exploration and structure understanding, then use the [JSONPath Evaluator](/jsonpath) to programmatically extract and filter specific subsets.'
+        }
+      }
+    ],
     useCases: {
       heading: 'Common Use Cases for the JSON Tree Viewer',
       items: [
@@ -723,7 +753,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
     whatIs: {
       heading: 'What Is JSON Minification?',
       paragraphs: [
-        'JSON minification (often called compacting) is the process of removing non-essential characters from a JSON document without changing its underlying semantic data. These characters include space indentations, tabs, carriage returns, and newlines that were added for human readability.',
+        'JSON minification (often called compacting) is the process of removing non-essential characters from a JSON document without changing its underlying semantic data. These characters include space indentations, tabs, carriage returns, and newlines that were added for human readability by tools like our [JSON Formatter](/json-formatter).',
         'Minification is technically distinct from data compression algorithms like Gzip or Brotli. While minification removes characters from the source text itself, compression algorithms encode the resulting byte stream for transmission. In production architectures, combining JSON minification with HTTP compression yields optimal network transfer efficiency.'
       ]
     },
@@ -774,6 +804,36 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         }
       ]
     },
+    detailedSections: [
+      {
+        heading: 'JSON Minification vs. HTTP Compression (Gzip & Brotli)',
+        badge: 'Network Performance',
+        paragraphs: [
+          'Minification and HTTP transport compression solve network efficiency at different layers of the web stack. Minification removes structural whitespace from the source text prior to transmission, while compression algorithms (like Gzip or Brotli) encode the byte stream over the wire.',
+          'Crucially, minifying JSON before applying HTTP compression yields smaller total transfer sizes than compression alone. Removing repetitive indent spaces reduces the entropy and token distance in the compression sliding window, allowing dictionary algorithms to compress repeated keys and values more efficiently.',
+          'For high-frequency REST microservices, WebSocket channels, and mobile APIs, combining client-side minification with gzip/brotli delivers measurable reductions in bandwidth consumption, cloud egress billing, and client parse latency.'
+        ],
+        callout: {
+          type: 'tip',
+          title: 'Production Pipeline Best Practice',
+          text: 'Minify JSON payloads at serialization time before writing to network sockets or database columns. When debugging later, load payloads into our [JSON Formatter](/json-formatter) to restore human-readable indentation.'
+        }
+      },
+      {
+        heading: 'Reversible Compacting: Preserving String Literals Without Data Loss',
+        badge: 'RFC 8259 Compliance',
+        paragraphs: [
+          'A common misconception among newer developers is that minification might accidentally remove intentional spaces inside text values (e.g., spaces within an address, description, or title).',
+          'Standard RFC 8259 minification strictly differentiates between whitespace outside string tokens (which is syntactically meaningless) and characters inside double-quoted string literals. Spaces, tabs, and unicode characters inside strings are preserved with 100% fidelity.',
+          'Because minification makes zero semantic modifications, the transformation is completely reversible: pasting minified JSON into our [JSON Formatter](/json-formatter) restores clean 2-space or 4-space layout instantly with identical object values.'
+        ],
+        callout: {
+          type: 'info',
+          title: 'Syntax Integrity Check',
+          text: 'If minifying fails or returns an error, your source JSON contains illegal syntax. Use our [JSON Validator](/json-validator) to locate and repair the broken tokens before compacting.'
+        }
+      }
+    ],
     useCases: {
       heading: 'When Should You Minify JSON?',
       items: [
@@ -821,7 +881,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         },
         {
           question: 'Can minified JSON be converted back to formatted JSON?',
-          answer: 'Yes. Because minification is fully reversible, pasting minified JSON into the JSON Formatter restores human-readable indentation instantly.'
+          answer: 'Yes. Because minification is fully reversible, pasting minified JSON into the [JSON Formatter](/json-formatter) restores human-readable indentation instantly.'
         }
       ]
     },
@@ -866,7 +926,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
       heading: 'Why Compare JSON Structurally Instead of Plain Text?',
       paragraphs: [
         'Standard line-by-line diff tools (like generic text comparison or `git diff`) often struggle with JSON. If two identical JSON payloads differ only in property ordering or indentation spaces, a line-by-line diff reports dozens of false-positive differences.',
-        'A structural JSON diff parses both payloads into object models and performs recursive key-by-key comparison. It accurately detects genuine semantic changes: keys added to an object, properties removed from an object, or value modifications (such as number changes, string edits, or array alterations).'
+        'A structural JSON diff parses both payloads into object models and performs recursive key-by-key comparison. It accurately detects genuine semantic changes: keys added to an object, properties removed from an object, or value modifications (such as number changes, string edits, or array alterations). Before comparing, you can ensure both payloads are valid using our [JSON Validator](/json-validator) and uniform in layout with our [JSON Formatter](/json-formatter).'
       ]
     },
     howTo: {
@@ -925,6 +985,36 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         }
       ]
     },
+    detailedSections: [
+      {
+        heading: 'Semantic Object Comparison vs. Plain Text Diff (git diff)',
+        badge: 'Structural Comparison',
+        paragraphs: [
+          'Generic line-based diff tools (such as standard "git diff", unix "diff", or basic online text comparators) analyze documents as linear streams of characters. When applied to JSON, this approach frequently produces false positive changes.',
+          'Under RFC 8259, an object is an unordered collection of key-value pairs: `{"host": "localhost", "port": 3000}` and `{"port": 3000, "host": "localhost"}` represent identical runtime data. A text diff flags this as two line removals and two additions, obscuring actual business changes.',
+          'Our semantic diff engine parses both documents into in-memory object trees. It normalizes key ordering, disregards indentation spaces and carriage returns, and compares properties recursively. Only true structural changes—additions, removals, and value mutations—are reported.'
+        ],
+        callout: {
+          type: 'info',
+          title: 'Array Order Significance',
+          text: 'Unlike object keys, array items are ordered sequences in JSON. Changes to array order or item insertion positions are correctly reported as structural differences.'
+        }
+      },
+      {
+        heading: 'Workflow: Normalizing and Validating Payloads Before Auditing',
+        badge: 'Best Practice',
+        paragraphs: [
+          'When comparing complex payloads—such as API response snapshots between staging and production environments, or MongoDB version histories—preparing your documents ensures seamless diffing.',
+          'First, verify that both payloads are syntactically valid using our [JSON Validator](/json-validator). If either payload contains syntax errors or broken delimiters, the parser cannot build the in-memory object tree.',
+          'Next, if you need to visually cross-check formatted text alongside the diff, format both payloads with matching indentation using our [JSON Formatter](/json-formatter).'
+        ],
+        callout: {
+          type: 'tip',
+          title: 'Audit Preparation',
+          text: 'Validating both payloads with the [JSON Validator](/json-validator) first ensures diff comparisons are purely semantic rather than triggered by syntax defects or truncated records.'
+        }
+      }
+    ],
     useCases: {
       heading: 'Common Use Cases for Comparing JSON',
       items: [
@@ -964,11 +1054,11 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
       items: [
         {
           question: 'Does property key order affect the comparison?',
-          answer: 'No. The comparison engine parses both inputs into JavaScript object graphs and compares properties logically. Differences in key ordering alone do not trigger false differences.'
+          answer: 'No. The comparison engine parses both inputs into JavaScript object graphs and compares properties logically. Differences in key ordering alone do not trigger false differences. To ensure both payloads parse correctly, test them in our [JSON Validator](/json-validator).'
         },
         {
           question: 'Can I compare JSON with different indentation styles?',
-          answer: 'Yes. Because comparison operates on parsed data models rather than raw strings, differences in indentation or line breaks are ignored.'
+          answer: 'Yes. Because comparison operates on parsed data models rather than raw strings, differences in indentation or line breaks are ignored. You can also re-indent both payloads with our [JSON Formatter](/json-formatter).'
         },
         {
           question: 'Are array elements compared by position or content?',
@@ -1018,7 +1108,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
       heading: 'What Is JSONPath (RFC 9535)?',
       paragraphs: [
         'JSONPath is an expression language designed to query, navigate, and extract elements from JSON data structures, analogous to XPath in XML. Formally standardized by the IETF under RFC 9535, JSONPath enables developers to extract specific fields, traverse nested lists, and filter items based on expressions.',
-        'A JSONPath expression begins with the root identifier symbol (`$`) followed by child property operators, recursive descent operators, array slices, or filter expressions. It is widely adopted across workflow automation tools, API test frameworks (e.g., Postman, RestAssured), and data ingestion pipelines.'
+        'A JSONPath expression begins with the root identifier symbol (`$`) followed by child property operators, recursive descent operators, array slices, or filter expressions. It is widely adopted across workflow automation tools, API test frameworks (e.g., Postman, RestAssured), and data ingestion pipelines. To inspect object structures and copy path chains interactively before authoring queries, explore your document in our [JSON Tree Viewer](/json-viewer).'
       ]
     },
     howTo: {
@@ -1075,6 +1165,36 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         }
       ]
     },
+    detailedSections: [
+      {
+        heading: 'RFC 9535 Syntax Reference: Selectors, Wildcards & Slices',
+        badge: 'Query Language Standard',
+        paragraphs: [
+          'JSONPath was standardized under IETF RFC 9535 to provide a consistent, cross-platform query syntax for JSON data models across languages and tools.',
+          'Every absolute query begins at the root identifier `$`. Child properties are selected using dot notation (`$.store.name`) or bracket notation (`$["store"]["name"]`). Wildcards (`*`) match all properties of an object or all elements in an array (`$.store.books[*].title`).',
+          'Recursive descent (`..`) searches the entire descendant tree regardless of depth: `$..price` extracts all price properties anywhere in the payload. Array slice notation (`[start:end:step]`) enables python-style slicing, such as `$.items[0:5:2]` to select every other item from the first five records.'
+        ],
+        callout: {
+          type: 'info',
+          title: 'Interactive Structure Discovery',
+          text: 'If you are unsure of the exact property hierarchy in a large payload, explore it first in the [JSON Tree Viewer](/json-viewer) and copy exact dot-notation paths directly into the query bar.'
+        }
+      },
+      {
+        heading: 'Writing Boolean Filter Expressions: The [?(...)] Syntax',
+        badge: 'Advanced Querying',
+        paragraphs: [
+          'Filter expressions allow dynamic querying based on property values rather than static array positions. A filter is written inside brackets as `[?(expression)]`, where `@` represents the current item being evaluated.',
+          'RFC 9535 supports standard comparison operators (`==`, `!=`, `<`, `<=`, `>`, `>=`) and logical operators (`&&`, `||`, `!`). For instance, `$.orders[?(@.total > 100 && @.status == "delivered")]` filters an orders collection down to large delivered shipments.',
+          'Once you have extracted and verified your desired data, you can format the output using our [JSON Formatter](/json-formatter), or validate the schema of your source payload using our [JSON Schema Validator](/json-schema).'
+        ],
+        callout: {
+          type: 'tip',
+          title: 'CI/CD and Automation Pipelines',
+          text: 'RFC 9535 JSONPath expressions are directly usable in GitHub Actions step outputs, Kubernetes kubectl JSONPath output flags, AWS Step Functions data paths, and Postman response tests.'
+        }
+      }
+    ],
     useCases: {
       heading: 'Supported JSONPath Syntax (RFC 9535)',
       items: [
@@ -1134,7 +1254,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         },
         {
           question: 'What is the difference between $.author and $..author?',
-          answer: '`$.author` selects only an immediate child property named "author" on the root object. `$..author` uses recursive descent to find every property named "author" at any nesting depth throughout the entire JSON document.'
+          answer: '`$.author` selects only an immediate child property named "author" on the root object. `$..author` uses recursive descent to find every property named "author" at any nesting depth throughout the entire JSON document. You can visually inspect these hierarchies in our [JSON Tree Viewer](/json-viewer).'
         }
       ]
     },
@@ -1178,8 +1298,8 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
     whatIs: {
       heading: 'What Is JSON Schema and Why Is It Used?',
       paragraphs: [
-        'JSON Schema is a declarative specification for describing, annotating, and validating JSON data structures. While basic syntax validation checks only whether a document is well-formed text (e.g. valid braces and quotes), JSON Schema enforces semantic contract rules.',
-        'With JSON Schema, developers define rules such as: which fields are required, allowed numeric ranges, string regular expression patterns, array length constraints, and custom enumerations. It serves as the foundation for modern OpenAPI (Swagger) documentation, API payload validation, and configuration file enforcement.'
+        'JSON Schema is a declarative specification for describing, annotating, and validating JSON data structures. While basic syntax validation in our [JSON Validator](/json-validator) checks whether a document is well-formed text (e.g. valid braces and quotes), JSON Schema enforces semantic contract rules.',
+        'With JSON Schema, developers define rules such as: which fields are required, allowed numeric ranges, string regular expression patterns, array length constraints, and custom enumerations. It serves as the foundation for modern OpenAPI (Swagger) documentation, API payload validation, and configuration file enforcement. You can format complex schema definitions with our [JSON Formatter](/json-formatter) to maintain clean indentation, or extract sub-properties using our [JSONPath Evaluator](/jsonpath).'
       ]
     },
     howTo: {
@@ -1237,6 +1357,36 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         }
       ]
     },
+    detailedSections: [
+      {
+        heading: 'Core JSON Schema Keywords: Enforcing Types, Properties & Contracts',
+        badge: 'Contract Definition',
+        paragraphs: [
+          'JSON Schema enables developers to create unambiguous interface contracts between API producers and consumers. Instead of writing custom imperative validation functions for every endpoint, declarative schemas codify data expectations.',
+          'The `type` keyword enforces primitive types ("string", "number", "integer", "boolean", "array", "object", "null"). The `required` array specifies mandatory properties that must be present. The `properties` object defines schemas for each property, while `additionalProperties: false` rejects unexpected or malicious fields.',
+          'String constraints like `pattern` (regular expressions) and `format` (e.g. "email", "date-time", "uri") enforce lexical validity, while numeric keywords like `minimum`, `maximum`, and `multipleOf` guard against out-of-range numerical data.'
+        ],
+        callout: {
+          type: 'info',
+          title: 'Preventing Schema Poisoning',
+          text: 'Always set "additionalProperties: false" on sensitive object definitions. This prevents consumers from accidentally or maliciously injecting unauthorized properties that might bypass application authorization layers.'
+        }
+      },
+      {
+        heading: 'Diagnosing Common Schema Errors vs. Syntax Validation',
+        badge: 'Validation Hierarchy',
+        paragraphs: [
+          'It is vital to distinguish between syntax validation and schema validation. Syntax errors (such as missing quotes, trailing commas, or unbalanced braces) prevent a document from being parsed into an object. In contrast, schema errors occur when valid JSON fails to meet business contract rules.',
+          'Our validator runs the industry-standard Ajv engine, delivering precise diagnostic codes: "must have required property", "must be string", "must match pattern", or "must NOT have additional properties".',
+          'Before validating against a schema, ensure both your instance payload and your schema definition are well-formed JSON text using our [JSON Validator](/json-validator). You can also use our [JSON Formatter](/json-formatter) to clean up indentation in complex schema files.'
+        ],
+        callout: {
+          type: 'tip',
+          title: 'Validation Sequencing',
+          text: 'Syntax validation (RFC 8259) must succeed before Schema validation can run. A payload with syntax errors cannot be evaluated by Ajv. Verify syntax in our [JSON Validator](/json-validator) first.'
+        }
+      }
+    ],
     useCases: {
       heading: 'Core JSON Schema Keywords and Validation Rules',
       items: [
@@ -1271,7 +1421,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
       concepts: [
         {
           term: 'Syntax Validation (RFC 8259)',
-          explanation: 'Verifies character formatting, punctuation, quotes, and tokenization. A payload can be syntactically valid while still containing illegal or missing business fields.'
+          explanation: 'Verifies character formatting, punctuation, quotes, and tokenization. A payload can be syntactically valid while still containing illegal or missing business fields. Use our [JSON Validator](/json-validator).'
         },
         {
           term: 'Schema Validation (Ajv Engine)',
@@ -1288,7 +1438,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
       items: [
         {
           question: 'What is the difference between JSON validation and JSON Schema validation?',
-          answer: 'JSON validation checks whether the text is valid JSON (correct braces, double quotes, no trailing commas). JSON Schema validation verifies whether valid JSON satisfies a specific data contract (such as expected property names, data types, and value constraints).'
+          answer: 'JSON validation checks whether the text is valid JSON (correct braces, double quotes, no trailing commas) using our [JSON Validator](/json-validator). JSON Schema validation verifies whether valid JSON satisfies a specific data contract (such as expected property names, data types, and value constraints).'
         },
         {
           question: 'What does additionalProperties: false mean in a schema?',
