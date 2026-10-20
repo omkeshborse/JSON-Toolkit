@@ -96,10 +96,11 @@ function prerender(): void {
     console.log(`  ✓ Generated: dist/${filename}`);
 
     const loc = route === '/' ? `${SITE_URL}/` : `${SITE_URL}${route}`;
+    const isTrustPage = ['/about', '/privacy', '/contact'].includes(route);
     sitemapUrls.push({
       loc,
-      priority: route === '/' ? '1.0' : '0.9',
-      changefreq: route === '/' ? 'weekly' : 'monthly',
+      priority: route === '/' ? '1.0' : isTrustPage ? '0.5' : '0.9',
+      changefreq: route === '/' ? 'weekly' : isTrustPage ? 'monthly' : 'weekly',
     });
 
     if (route !== '/') {

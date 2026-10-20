@@ -31,6 +31,9 @@ export const KNOWN_ROUTES = [
   '/json-compare',
   '/jsonpath',
   '/json-schema',
+  '/about',
+  '/privacy',
+  '/contact',
 ] as const;
 
 export type KnownRoute = (typeof KNOWN_ROUTES)[number];
@@ -167,6 +170,139 @@ export function getRouteHead(path: string): RouteHeadData {
       twitterImage: OG_IMAGE,
       jsonLd,
       seoContent: seoItem,
+    };
+  }
+
+  // Trust & Transparency Pages (About, Privacy, Contact)
+  if (path === '/about') {
+    const title = `About | ${SITE_NAME}`;
+    const description =
+      'Learn about 101 JSON Toolkit: our client-side architecture, open standards adherence (RFC 8259, RFC 9535), and zero-telemetry developer utilities.';
+    const h1 = 'About 101 JSON Toolkit';
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'AboutPage',
+          name: title,
+          url: canonicalUrl,
+          description,
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+            { '@type': 'ListItem', position: 2, name: 'About', item: canonicalUrl },
+          ],
+        },
+      ],
+    };
+    return {
+      path,
+      slug: 'about',
+      title,
+      description,
+      canonical: canonicalUrl,
+      robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      h1,
+      ogType: 'website',
+      ogTitle: title,
+      ogDescription: description,
+      ogUrl: canonicalUrl,
+      ogImage: OG_IMAGE,
+      twitterCard: 'summary_large_image',
+      twitterTitle: title,
+      twitterDescription: description,
+      twitterImage: OG_IMAGE,
+      jsonLd,
+    };
+  }
+
+  if (path === '/privacy') {
+    const title = `Privacy Policy | ${SITE_NAME}`;
+    const description =
+      'Our transparent privacy policy: client-side in-browser execution, zero JSON payload transmission, local storage usage, and absence of tracking cookies.';
+    const h1 = 'Privacy Policy';
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebPage',
+          name: title,
+          url: canonicalUrl,
+          description,
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+            { '@type': 'ListItem', position: 2, name: 'Privacy Policy', item: canonicalUrl },
+          ],
+        },
+      ],
+    };
+    return {
+      path,
+      slug: 'privacy',
+      title,
+      description,
+      canonical: canonicalUrl,
+      robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      h1,
+      ogType: 'website',
+      ogTitle: title,
+      ogDescription: description,
+      ogUrl: canonicalUrl,
+      ogImage: OG_IMAGE,
+      twitterCard: 'summary_large_image',
+      twitterTitle: title,
+      twitterDescription: description,
+      twitterImage: OG_IMAGE,
+      jsonLd,
+    };
+  }
+
+  if (path === '/contact') {
+    const title = `Contact & Feedback | ${SITE_NAME}`;
+    const description =
+      'Get in touch with 101 JSON Toolkit: report RFC parsing bugs, submit feature requests, or share feedback on our developer utilities.';
+    const h1 = 'Contact & Feedback';
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'ContactPage',
+          name: title,
+          url: canonicalUrl,
+          description,
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+            { '@type': 'ListItem', position: 2, name: 'Contact & Feedback', item: canonicalUrl },
+          ],
+        },
+      ],
+    };
+    return {
+      path,
+      slug: 'contact',
+      title,
+      description,
+      canonical: canonicalUrl,
+      robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      h1,
+      ogType: 'website',
+      ogTitle: title,
+      ogDescription: description,
+      ogUrl: canonicalUrl,
+      ogImage: OG_IMAGE,
+      twitterCard: 'summary_large_image',
+      twitterTitle: title,
+      twitterDescription: description,
+      twitterImage: OG_IMAGE,
+      jsonLd,
     };
   }
 

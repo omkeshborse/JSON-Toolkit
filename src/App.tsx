@@ -14,6 +14,9 @@ import { JsonMinifierPage } from './pages/JsonMinifierPage';
 import { JsonComparePage } from './pages/JsonComparePage';
 import { JsonPathPage } from './pages/JsonPathPage';
 import { JsonSchemaPage } from './pages/JsonSchemaPage';
+import { AboutPage } from './pages/AboutPage';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { ContactPage } from './pages/ContactPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 import { WorkspaceProvider } from './context/WorkspaceContext';
@@ -59,6 +62,12 @@ function AppContent() {
         return <JsonPathPage onShowToast={addToast} />;
       case '/json-schema':
         return <JsonSchemaPage onShowToast={addToast} />;
+      case '/about':
+        return <AboutPage />;
+      case '/privacy':
+        return <PrivacyPage />;
+      case '/contact':
+        return <ContactPage />;
       default:
         return <NotFoundPage />;
     }

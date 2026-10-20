@@ -5,6 +5,9 @@ import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { LandingPage } from '../pages/LandingPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
+import { AboutPage } from '../pages/AboutPage';
+import { PrivacyPage } from '../pages/PrivacyPage';
+import { ContactPage } from '../pages/ContactPage';
 import { RouterProvider } from '../router';
 
 interface StaticPageProps {
@@ -28,6 +31,12 @@ export const StaticPage: React.FC<StaticPageProps> = ({ routeHead }) => {
         <main className="flex-1 flex flex-col">
           {path === '/' ? (
             <LandingPage />
+          ) : path === '/about' ? (
+            <AboutPage />
+          ) : path === '/privacy' ? (
+            <PrivacyPage />
+          ) : path === '/contact' ? (
+            <ContactPage />
           ) : path === '404' || !seoContent ? (
             <NotFoundPage />
           ) : (
