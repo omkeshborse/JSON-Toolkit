@@ -10,7 +10,10 @@ import {
   Check,
   CheckCircle2,
   Layers,
-  ChevronDown
+  ChevronDown,
+  AlertTriangle,
+  FileCode,
+  Info
 } from 'lucide-react';
 
 interface SeoContentSectionProps {
@@ -128,6 +131,106 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
           })}
         </div>
       </div>
+
+      {/* 3b. Syntax Error Reference Table (if present) */}
+      {content.errorReferenceTable && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+              <AlertTriangle className="w-5 h-5 text-amber-400" />
+              <span>{content.errorReferenceTable.heading}</span>
+            </h2>
+            <p className="text-sm text-slate-400 mt-1 max-w-3xl">
+              {content.errorReferenceTable.description}
+            </p>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-[#1A202C] bg-[#121620]">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-[#262D3D] bg-[#0B0D13]/70 text-slate-300 font-semibold font-mono">
+                  <th className="py-3 px-4 w-44">Syntax Violation</th>
+                  <th className="py-3 px-4 w-60">Invalid Token / Example</th>
+                  <th className="py-3 px-4 w-60">RFC 8259 Correction</th>
+                  <th className="py-3 px-4">Parser Grammar Rule</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1A202C] text-slate-300">
+                {content.errorReferenceTable.rows.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-[#161B26] transition-colors align-top">
+                    <td className="py-3.5 px-4 font-semibold text-white">
+                      {row.errorType}
+                      <span className="block text-[11px] text-slate-400 font-normal mt-0.5 font-sans">
+                        {row.cause}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-[11px]">
+                      <code className="text-rose-300 bg-rose-950/40 border border-rose-900/50 px-2 py-1 rounded block whitespace-pre overflow-x-auto">
+                        {row.badSnippet}
+                      </code>
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-[11px]">
+                      <code className="text-emerald-300 bg-emerald-950/40 border border-emerald-900/50 px-2 py-1 rounded block whitespace-pre overflow-x-auto">
+                        {row.goodSnippet}
+                      </code>
+                    </td>
+                    <td className="py-3.5 px-4 text-xs text-slate-300 leading-relaxed font-sans">
+                      {row.explanation}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* 3c. Detailed Deep-Dive Sections (if present) */}
+      {content.detailedSections && content.detailedSections.length > 0 && (
+        <div className="space-y-10">
+          {content.detailedSections.map((sec, idx) => (
+            <div key={idx} className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+                  <FileCode className="w-5 h-5 text-[#38BDF8]" />
+                  <span>{sec.heading}</span>
+                </h2>
+                {sec.badge && (
+                  <span className="text-[10px] uppercase font-mono tracking-wider px-2 py-0.5 rounded bg-[#1A202C] text-[#38BDF8] border border-[#262D3D]">
+                    {sec.badge}
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-3 max-w-4xl">
+                {sec.paragraphs.map((p, pIdx) => (
+                  <p key={pIdx} className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                    {p}
+                  </p>
+                ))}
+              </div>
+
+              {sec.callout && (
+                <div
+                  className={`p-4 rounded-xl border max-w-4xl text-xs sm:text-sm leading-relaxed flex items-start gap-3 ${
+                    sec.callout.type === 'warning'
+                      ? 'bg-amber-950/20 border-amber-900/50 text-amber-200'
+                      : sec.callout.type === 'tip'
+                      ? 'bg-emerald-950/20 border-emerald-900/50 text-emerald-200'
+                      : 'bg-sky-950/20 border-sky-900/50 text-sky-200'
+                  }`}
+                >
+                  <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold block mb-0.5">{sec.callout.title}</span>
+                    <span className="text-slate-300">{sec.callout.text}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* 4. Common Use Cases */}
       <div className="space-y-6">
