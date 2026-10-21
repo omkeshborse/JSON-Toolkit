@@ -53,7 +53,7 @@ export const StaticPage: React.FC<StaticPageProps> = ({ routeHead }) => {
 
               {/* Editor Workspace Placeholder for prerendered snapshot */}
               <div
-                className="w-full h-80 rounded-xl bg-[#121620] border border-[#262D3D] flex flex-col items-center justify-center p-6 text-center text-slate-400 my-6 shadow-inner"
+                className="w-full min-h-[440px] h-[clamp(440px,58vh,680px)] rounded-xl bg-[#121620] border border-[#262D3D] flex flex-col items-center justify-center p-6 text-center text-slate-400 my-6 shadow-inner"
                 aria-label="Interactive JSON Editor loading container"
               >
                 <div className="w-10 h-10 rounded-xl bg-[#1A202C] border border-[#262D3D] flex items-center justify-center text-[#38BDF8] mb-3">
