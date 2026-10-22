@@ -43,10 +43,10 @@ export function getRouteHead(path: string): RouteHeadData {
   const canonicalUrl = `${SITE_URL}${isHome ? '/' : path}`;
 
   if (isHome) {
-    const title = 'Free Online JSON Tools for Developers | 101 JSON Toolkit';
+    const title = 'JSON Toolkit — Fast, Private Online JSON Tools | 101 JSON Toolkit';
     const description =
-      'A fast, secure, client-side suite of developer utilities to format, validate, minify, inspect, compare, and query JSON data in your browser.';
-    const h1 = 'Free Online JSON Formatter, Validator & Viewer Toolkit';
+      'Format, validate, diff, query with JSONPath, inspect schemas, and view JSON trees in your browser. 100% client-side with zero telemetry.';
+    const h1 = 'Free Online JSON Tools for Developers';
 
     const jsonLd = {
       '@context': 'https://schema.org',

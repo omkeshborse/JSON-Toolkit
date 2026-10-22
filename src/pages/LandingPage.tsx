@@ -24,8 +24,8 @@ const PREVIEW_SAMPLE = `{
   "features": [
     "Formatting & Indentation",
     "RFC 8259 Syntax Validation",
-    "JSONPath RFC 9535 Queries",
-    "JSON Schema Ajv Validation",
+    "JSONPath Query Evaluation",
+    "JSON Schema Draft-07 Validation",
     "Deep Object Diffing",
     "Visual Tree Inspector"
   ],
@@ -53,14 +53,16 @@ export const LandingPage: React.FC = () => {
       icon: Braces,
       badge: 'Core',
       badgeColor: 'text-[#38BDF8] bg-[#38BDF8]/10 border-[#38BDF8]/20',
+      action: 'Format & Beautify JSON',
     },
     {
       title: 'JSON Validator',
-      description: 'Strict RFC 8259 syntax checker with exact line, column, and token diagnostic reporting.',
+      description: 'Strict RFC 8259 syntax checker with exact line, column, and token diagnostic reporting and smart repairs.',
       to: '/json-validator',
       icon: CheckCircle2,
       badge: 'RFC 8259',
       badgeColor: 'text-[#34D399] bg-[#34D399]/10 border-[#34D399]/20',
+      action: 'Validate RFC 8259 Syntax',
     },
     {
       title: 'JSON Tree Viewer',
@@ -69,6 +71,7 @@ export const LandingPage: React.FC = () => {
       icon: Eye,
       badge: 'Inspector',
       badgeColor: 'text-[#A78BFA] bg-[#A78BFA]/10 border-[#A78BFA]/20',
+      action: 'Explore JSON Tree',
     },
     {
       title: 'JSON Minifier',
@@ -77,6 +80,7 @@ export const LandingPage: React.FC = () => {
       icon: Minimize2,
       badge: 'Compress',
       badgeColor: 'text-[#FBBF24] bg-[#FBBF24]/10 border-[#FBBF24]/20',
+      action: 'Minify JSON Payload',
     },
     {
       title: 'JSON Compare',
@@ -85,22 +89,25 @@ export const LandingPage: React.FC = () => {
       icon: GitCompare,
       badge: 'Diff Tool',
       badgeColor: 'text-[#38BDF8] bg-[#38BDF8]/10 border-[#38BDF8]/20',
+      action: 'Compare JSON Documents',
     },
     {
       title: 'JSONPath Evaluator',
-      description: 'Query, filter, and extract nested elements using standard RFC 9535 JSONPath expressions.',
+      description: 'Query, filter, and extract nested elements using JSONPath expressions with real-time match reporting.',
       to: '/jsonpath',
       icon: Search,
-      badge: 'RFC 9535',
+      badge: 'Query Tool',
       badgeColor: 'text-[#34D399] bg-[#34D399]/10 border-[#34D399]/20',
+      action: 'Evaluate JSONPath',
     },
     {
       title: 'JSON Schema Validator',
-      description: 'Validate complex JSON payloads against Draft-07 and 2020-12 specifications using the standard Ajv engine.',
+      description: 'Validate complex JSON payloads against Draft-07 specifications using the standard Ajv engine with format checks.',
       to: '/json-schema',
       icon: FileCode2,
-      badge: 'Ajv Engine',
+      badge: 'Draft-07 (Ajv)',
       badgeColor: 'text-[#A78BFA] bg-[#A78BFA]/10 border-[#A78BFA]/20',
+      action: 'Validate JSON Schema',
     },
   ];
 
@@ -236,7 +243,7 @@ export const LandingPage: React.FC = () => {
                   </div>
 
                   <div className="mt-6 pt-4 border-t border-[#1A202C] flex items-center justify-between text-xs font-semibold text-slate-400 group-hover:text-[#38BDF8] transition-colors">
-                    <span>Launch Utility</span>
+                    <span>{tool.action}</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </Link>

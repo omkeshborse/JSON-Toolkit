@@ -17,13 +17,13 @@ export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const mainTools = [
-    { to: '/json-formatter', label: 'Formatter', icon: Braces },
-    { to: '/json-validator', label: 'Validator', icon: CheckCircle2 },
-    { to: '/json-viewer', label: 'Viewer', icon: Eye },
-    { to: '/json-minifier', label: 'Minifier', icon: Minimize2 },
-    { to: '/json-compare', label: 'Compare', icon: GitCompare },
-    { to: '/jsonpath', label: 'JSONPath', icon: Search },
-    { to: '/json-schema', label: 'Schema', icon: FileCode2 },
+    { to: '/json-formatter', label: 'Formatter', title: 'JSON Formatter & Beautifier', icon: Braces },
+    { to: '/json-validator', label: 'Validator', title: 'JSON Syntax Validator & Linter', icon: CheckCircle2 },
+    { to: '/json-viewer', label: 'Viewer', title: 'Interactive JSON Tree Viewer', icon: Eye },
+    { to: '/json-minifier', label: 'Minifier', title: 'JSON Minifier & Compressor', icon: Minimize2 },
+    { to: '/json-compare', label: 'Compare', title: 'Side-by-Side JSON Diff Tool', icon: GitCompare },
+    { to: '/jsonpath', label: 'JSONPath', title: 'JSONPath Expression Evaluator', icon: Search },
+    { to: '/json-schema', label: 'Schema', title: 'JSON Schema Draft-07 Validator', icon: FileCode2 },
   ];
 
   return (
@@ -53,6 +53,7 @@ export const Navbar: React.FC = () => {
               <Link
                 key={tool.to}
                 to={tool.to}
+                title={tool.title}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors ${
                   isActive
                     ? 'bg-[#121620] text-[#38BDF8] border border-[#262D3D]'
@@ -91,6 +92,7 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={tool.to}
                   to={tool.to}
+                  title={tool.title}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-2 p-2 rounded text-xs font-medium ${
                     path === tool.to

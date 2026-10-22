@@ -95,8 +95,8 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
     slug: '/json-formatter',
     toolName: 'JSON Formatter',
     h1: 'Online JSON Formatter & Beautifier',
-    metaTitle: 'JSON Formatter Online — Format, Validate & Beautify (100% Client-Side)',
-    metaDescription: 'Format, beautify, and validate JSON online with 2-space, 4-space, or tab indentation. Runs 100% locally in your browser with zero server data collection.',
+    metaTitle: 'JSON Formatter Online — Format & Beautify JSON | 101 JSON Toolkit',
+    metaDescription: 'Format and beautify messy JSON with custom indentation (2 spaces, 4 spaces, tabs). 100% private, client-side execution with zero data uploaded.',
     searchIntentKeywords: [
       'JSON formatter',
       'JSON formatter online',
@@ -296,8 +296,8 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
     slug: '/json-validator',
     toolName: 'JSON Validator',
     h1: 'JSON Syntax Validator & Auto-Fix Repair Engine',
-    metaTitle: 'JSON Validator & Auto-Fixer Online — Detect & Repair Syntax Errors',
-    metaDescription: 'Validate RFC 8259 JSON syntax online with line and column error indicators. Automatically repair trailing commas, single quotes, and unquoted keys.',
+    metaTitle: 'JSON Validator Online — RFC 8259 Syntax Checker | 101 JSON Toolkit',
+    metaDescription: 'Validate JSON syntax against RFC 8259. Pinpoint syntax errors by line and column, inspect token diagnostics, and auto-repair common syntax errors locally.',
     searchIntentKeywords: [
       'JSON validator',
       'JSON validator online',
@@ -555,8 +555,8 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
     slug: '/json-viewer',
     toolName: 'JSON Tree Viewer',
     h1: 'Interactive JSON Tree Viewer & Node Explorer',
-    metaTitle: 'Interactive JSON Tree Viewer — Collapsible Node Explorer Online',
-    metaDescription: 'Inspect, visualize, and navigate complex nested JSON payloads with an interactive, collapsible tree view, real-time key search, and one-click node copying.',
+    metaTitle: 'JSON Tree Viewer — Interactive Collapsible JSON Explorer | 101 JSON Toolkit',
+    metaDescription: 'Visualize and navigate complex, deeply nested JSON as an interactive collapsible tree. Search nodes, inspect path chains, and copy values with zero data uploads.',
     searchIntentKeywords: [
       'JSON viewer',
       'JSON viewer online',
@@ -744,8 +744,8 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
     slug: '/json-minifier',
     toolName: 'JSON Minifier',
     h1: 'JSON Minifier & Compact Payload Generator',
-    metaTitle: 'JSON Minifier Online — Fast One-Line JSON Payload Compressor',
-    metaDescription: 'Minify and compact JSON documents online by stripping non-semantic whitespace, indentations, and newlines to reduce network transfer payload sizes.',
+    metaTitle: 'JSON Minifier Online — Fast One-Line JSON Compressor | 101 JSON Toolkit',
+    metaDescription: 'Minify and compress JSON payloads instantly. Strip unnecessary whitespace and line breaks to reduce network payload size for production APIs.',
     searchIntentKeywords: [
       'JSON minifier',
       'minify JSON',
@@ -916,8 +916,8 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
     slug: '/json-compare',
     toolName: 'JSON Compare & Diff',
     h1: 'Side-by-Side JSON Diff & Comparison Tool',
-    metaTitle: 'JSON Diff Online — Side-by-Side Semantic JSON Comparator',
-    metaDescription: 'Compare two JSON objects side by side. Highlights added, removed, and modified values while accounting for key order independence.',
+    metaTitle: 'Compare Two JSON Files — Semantic JSON Diff Online | 101 JSON Toolkit',
+    metaDescription: 'Compare two JSON files side by side with semantic diffing. Instantly highlight additions, deletions, and modifications without uploading data.',
     searchIntentKeywords: [
       'JSON compare',
       'compare JSON',
@@ -1098,8 +1098,8 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
     slug: '/jsonpath',
     toolName: 'JSONPath Query Evaluator',
     h1: 'JSONPath Expression Tester & Evaluator',
-    metaTitle: 'JSONPath Tester & Query Evaluator Online — Test Expressions',
-    metaDescription: 'Test and evaluate JSONPath expressions against JSON documents online with interactive result highlighting, recursive descent, and filter query presets.',
+    metaTitle: 'JSONPath Tester & Query Evaluator Online | 101 JSON Toolkit',
+    metaDescription: 'Test and evaluate JSONPath expressions against JSON payloads in real time with recursive descent, array slicing, and filter queries. 100% private in-browser.',
     searchIntentKeywords: [
       'JSONPath',
       'JSONPath tester',
@@ -1262,6 +1262,18 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         {
           question: 'What is the difference between $.author and $..author?',
           answer: '`$.author` selects only an immediate child property named "author" on the root object. `$..author` uses recursive descent to find every property named "author" at any nesting depth throughout the entire JSON document. You can visually inspect these hierarchies in our [JSON Tree Viewer](/json-viewer).'
+        },
+        {
+          question: 'Does JSONPath support array negative indexing?',
+          answer: 'Yes. In jsonpath-plus, negative indices in bracket slice selectors allow indexing from the end of an array. For example, `$.items[-1:]` selects the final element in the array, while `$.items[-3:]` extracts the last three elements.'
+        },
+        {
+          question: 'Why does my filter expression return empty?',
+          answer: 'Filter expressions must reference properties of array items using the current node symbol `@` (e.g. `[?(@.price < 50)]`). If you omit the `@` or misspell property names, the condition evaluates to false for all elements and returns an empty list.'
+        },
+        {
+          question: 'What is the difference between dot notation and bracket notation?',
+          answer: 'Dot notation (`$.store.book`) is concise for property names containing alphanumeric characters and underscores. Bracket notation (`$[\x27store\x27][\x27book\x27]`) is required when property names contain hyphens, spaces, dots, or non-ASCII characters.'
         }
       ]
     },
@@ -1291,8 +1303,8 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
     slug: '/json-schema',
     toolName: 'JSON Schema Validator',
     h1: 'JSON Schema Validator & Contract Inspector',
-    metaTitle: 'JSON Schema Validator Online — Validate JSON Against Schema',
-    metaDescription: 'Validate JSON payloads against JSON Schema specifications in your browser using the Ajv validation engine with instant error diagnostics and format checks.',
+    metaTitle: 'JSON Schema Validator Online — Draft-07 (Ajv) | 101 JSON Toolkit',
+    metaDescription: 'Validate JSON payloads against JSON Schema Draft-07 specifications in your browser using the Ajv validation engine with format and contract checks.',
     searchIntentKeywords: [
       'JSON Schema validator',
       'JSON Schema validator online',
