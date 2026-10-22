@@ -48,6 +48,7 @@ export interface RelatedTool {
 export interface ToolSeoData {
   slug: string;
   toolName: string;
+  h1?: string;
   metaTitle: string;
   metaDescription: string;
   searchIntentKeywords: string[];
@@ -93,8 +94,9 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
   '/json-formatter': {
     slug: '/json-formatter',
     toolName: 'JSON Formatter',
-    metaTitle: 'JSON Formatter Online | Format & Beautify JSON',
-    metaDescription: 'Format, beautify, and pretty print JSON online with custom indentation and instant syntax validation. 100% private, client-side browser execution.',
+    h1: 'Online JSON Formatter & Beautifier',
+    metaTitle: 'JSON Formatter Online — Format, Validate & Beautify (100% Client-Side)',
+    metaDescription: 'Format, beautify, and validate JSON online with 2-space, 4-space, or tab indentation. Runs 100% locally in your browser with zero server data collection.',
     searchIntentKeywords: [
       'JSON formatter',
       'JSON formatter online',
@@ -293,8 +295,9 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
   '/json-validator': {
     slug: '/json-validator',
     toolName: 'JSON Validator',
-    metaTitle: 'JSON Validator Online | Check JSON Syntax',
-    metaDescription: 'Validate JSON syntax in real time with line and column error indicators and automated repairs for common formatting mistakes directly in the browser.',
+    h1: 'JSON Syntax Validator & Auto-Fix Repair Engine',
+    metaTitle: 'JSON Validator & Auto-Fixer Online — Detect & Repair Syntax Errors',
+    metaDescription: 'Validate RFC 8259 JSON syntax online with line and column error indicators. Automatically repair trailing commas, single quotes, and unquoted keys.',
     searchIntentKeywords: [
       'JSON validator',
       'JSON validator online',
@@ -488,7 +491,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
           explanation: 'Checks whether the document is well-formed JSON text. It confirms correct brace balancing, quotation marks, and valid data types (string, number, boolean, array, object, null).'
         },
         {
-          term: 'JSON Schema Validation (Draft-07 / 2020-12)',
+          term: 'JSON Schema Validation (Draft-07)',
           explanation: 'Checks whether syntactically valid JSON adheres to a specific business data model contract, such as required property lists, string formats, numeric ranges, and enum values.'
         },
         {
@@ -532,7 +535,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         {
           name: 'JSON Schema Validator',
           path: '/json-schema',
-          description: 'Validate data structures, property constraints, and data types against Draft-07 and 2020-12 schemas.'
+          description: 'Validate data structures, property constraints, and data types against Draft-07 schemas using Ajv.'
         },
         {
           name: 'JSON Formatter',
@@ -551,8 +554,9 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
   '/json-viewer': {
     slug: '/json-viewer',
     toolName: 'JSON Tree Viewer',
-    metaTitle: 'JSON Viewer Online | Explore JSON as a Tree',
-    metaDescription: 'Inspect and explore nested JSON structures using a collapsable interactive tree viewer with path search and instant node value copying.',
+    h1: 'Interactive JSON Tree Viewer & Node Explorer',
+    metaTitle: 'Interactive JSON Tree Viewer — Collapsible Node Explorer Online',
+    metaDescription: 'Inspect, visualize, and navigate complex nested JSON payloads with an interactive, collapsible tree view, real-time key search, and one-click node copying.',
     searchIntentKeywords: [
       'JSON viewer',
       'JSON viewer online',
@@ -563,7 +567,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
       'inspect JSON',
       'JSON explorer'
     ],
-    intro: 'A JSON viewer presents complex or nested JSON as an interactive, expandable tree. Instead of scrolling through thousands of lines of raw text, expand and collapse nodes, filter keys with real-time search, and copy paths directly to your clipboard.',
+    intro: 'A JSON viewer presents complex or nested JSON as an interactive, expandable tree. Instead of scrolling through thousands of lines of raw text, expand and collapse nodes, filter keys with real-time search, and copy node values directly to your clipboard.',
     whatIs: {
       heading: 'Why Use an Interactive JSON Tree Viewer?',
       paragraphs: [
@@ -739,8 +743,9 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
   '/json-minifier': {
     slug: '/json-minifier',
     toolName: 'JSON Minifier',
-    metaTitle: 'JSON Minifier Online | Minify JSON',
-    metaDescription: 'Minify JSON documents by stripping unnecessary whitespace and line breaks to minimize payload size for network transfer.',
+    h1: 'JSON Minifier & Compact Payload Generator',
+    metaTitle: 'JSON Minifier Online — Fast One-Line JSON Payload Compressor',
+    metaDescription: 'Minify and compact JSON documents online by stripping non-semantic whitespace, indentations, and newlines to reduce network transfer payload sizes.',
     searchIntentKeywords: [
       'JSON minifier',
       'minify JSON',
@@ -910,8 +915,9 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
   '/json-compare': {
     slug: '/json-compare',
     toolName: 'JSON Compare & Diff',
-    metaTitle: 'JSON Compare | Compare Two JSON Documents',
-    metaDescription: 'Compare two JSON files side-by-side to highlight added, removed, and modified keys and structural differences in real time.',
+    h1: 'Side-by-Side JSON Diff & Comparison Tool',
+    metaTitle: 'JSON Diff Online — Side-by-Side Semantic JSON Comparator',
+    metaDescription: 'Compare two JSON objects side by side. Highlights added, removed, and modified values while accounting for key order independence.',
     searchIntentKeywords: [
       'JSON compare',
       'compare JSON',
@@ -1091,8 +1097,9 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
   '/jsonpath': {
     slug: '/jsonpath',
     toolName: 'JSONPath Query Evaluator',
-    metaTitle: 'JSONPath Tester & Evaluator | Query JSON Online',
-    metaDescription: 'Test and evaluate RFC 9535 JSONPath queries against JSON documents with live syntax matching, path extraction, and tabular results.',
+    h1: 'JSONPath Expression Tester & Evaluator',
+    metaTitle: 'JSONPath Tester & Query Evaluator Online — Test Expressions',
+    metaDescription: 'Test and evaluate JSONPath expressions against JSON documents online with interactive result highlighting, recursive descent, and filter query presets.',
     searchIntentKeywords: [
       'JSONPath',
       'JSONPath tester',
@@ -1283,8 +1290,9 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
   '/json-schema': {
     slug: '/json-schema',
     toolName: 'JSON Schema Validator',
-    metaTitle: 'JSON Schema Validator | Validate JSON Against Schema',
-    metaDescription: 'Validate JSON payloads against JSON Schema Draft-07 and 2020-12 specifications using the standard Ajv validation engine.',
+    h1: 'JSON Schema Validator & Contract Inspector',
+    metaTitle: 'JSON Schema Validator Online — Validate JSON Against Schema',
+    metaDescription: 'Validate JSON payloads against JSON Schema specifications in your browser using the Ajv validation engine with instant error diagnostics and format checks.',
     searchIntentKeywords: [
       'JSON Schema validator',
       'JSON Schema validator online',
@@ -1294,7 +1302,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
       'JSON Schema checker',
       'validate JSON against schema'
     ],
-    intro: 'A JSON Schema validator verifies that a JSON instance document satisfies the structural constraints, required properties, and data types defined by a JSON Schema. Powered by the standard Ajv validation engine, it validates against Draft-07 and 2020-12 specifications.',
+    intro: 'A JSON Schema validator verifies that a JSON instance document satisfies the structural constraints, required properties, and data types defined by a JSON Schema. Powered by the standard Ajv validation engine, it validates against standard Draft-07 specifications.',
     whatIs: {
       heading: 'What Is JSON Schema and Why Is It Used?',
       paragraphs: [
@@ -1313,7 +1321,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         {
           stepNumber: 2,
           title: 'Input JSON Schema Definition',
-          detail: 'Paste your schema definition (Draft-07 or 2020-12) into the right editor pane, or click "Load Sample" to load a paired dataset.'
+          detail: 'Paste your schema definition (Draft-07) into the right editor pane, or click "Load Sample" to load a paired dataset.'
         },
         {
           stepNumber: 3,
@@ -1429,7 +1437,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         },
         {
           term: 'Schema Specifications Supported',
-          explanation: 'Supports JSON Schema Draft-07 and Draft 2020-12 standards executed using the Ajv validator.'
+          explanation: 'Supports JSON Schema Draft-07 specifications executed in-browser using the Ajv validator.'
         }
       ]
     },
@@ -1446,7 +1454,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         },
         {
           question: 'Which JSON Schema versions are supported?',
-          answer: 'This validator runs the Ajv engine supporting JSON Schema Draft-07 and Draft 2020-12 specifications.'
+          answer: 'This validator runs the Ajv engine supporting JSON Schema Draft-07 specifications with format checking via ajv-formats.'
         }
       ]
     },
@@ -1466,7 +1474,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         {
           name: 'JSONPath Query Evaluator',
           path: '/jsonpath',
-          description: 'Query and extract validated payload properties using standard RFC 9535 expressions.'
+          description: 'Query and extract validated payload properties using JSONPath expressions.'
         }
       ]
     }

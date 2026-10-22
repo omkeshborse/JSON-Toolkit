@@ -94,7 +94,7 @@ export function getRouteHead(path: string): RouteHeadData {
   if (seoItem) {
     const title = seoItem.metaTitle;
     const description = seoItem.metaDescription;
-    const h1 = `${seoItem.toolName}`;
+    const h1 = seoItem.h1 || `${seoItem.toolName}`;
 
     const graph: Array<Record<string, unknown>> = [
       {

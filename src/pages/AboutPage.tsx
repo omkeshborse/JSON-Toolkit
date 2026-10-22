@@ -54,8 +54,8 @@ export const AboutPage: React.FC = () => {
             <h2 className="text-lg font-bold text-white">Strict Standards Adherence</h2>
             <p className="text-sm text-slate-300 leading-relaxed">
               Our utilities strictly enforce international standards, including RFC 8259 (standard
-              JSON text format), ECMA-404, RFC 9535 (JSONPath query expressions), and JSON Schema
-              Draft-07 / 2020-12 specifications.
+              JSON text format), ECMA-404, JSONPath query expressions, and JSON Schema
+              Draft-07 specifications.
             </p>
           </div>
         </div>
@@ -92,12 +92,12 @@ export const AboutPage: React.FC = () => {
               <li>
                 <strong className="text-white">JSONPath Queries:</strong> Implemented via the{' '}
                 <code className="text-[#38BDF8] bg-[#121620] px-1.5 py-0.5 rounded">jsonpath-plus</code>{' '}
-                client-side library supporting RFC 9535 path matching and filtering.
+                client-side library supporting path matching and filter expressions.
               </li>
               <li>
                 <strong className="text-white">Schema Validation:</strong> Evaluated in-memory using the{' '}
                 <code className="text-[#38BDF8] bg-[#121620] px-1.5 py-0.5 rounded">ajv</code> validator,
-                supporting JSON Schema Draft-07 and Draft 2020-12 without external server calls.
+                supporting JSON Schema Draft-07 specifications with format checking without external server calls.
               </li>
               <li>
                 <strong className="text-white">Local Workspace Persistence:</strong> Document tabs and

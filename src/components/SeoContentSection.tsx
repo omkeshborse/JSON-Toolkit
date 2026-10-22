@@ -22,8 +22,11 @@ interface SeoContentSectionProps {
 
 /**
  * Parses markdown-style links [Anchor Text](/path) into accessible React router Link components.
+ * Preserves normal text, surrounding punctuation, and avoids raw markdown delimiters.
  */
-function renderFormattedText(text: string): React.ReactNode {
+function renderFormattedText(text: string | undefined | null): React.ReactNode {
+  if (!text || typeof text !== 'string') return null;
+
   const parts: React.ReactNode[] = [];
   const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
   let lastIndex = 0;
@@ -41,7 +44,7 @@ function renderFormattedText(text: string): React.ReactNode {
         <Link
           key={`${match.index}-${href}`}
           to={href}
-          className="text-[#38BDF8] hover:underline font-medium inline-flex items-center gap-0.5"
+          className="text-[#38BDF8] hover:underline font-medium underline-offset-2"
         >
           {anchorText}
         </Link>
@@ -53,7 +56,7 @@ function renderFormattedText(text: string): React.ReactNode {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#38BDF8] hover:underline font-medium"
+          className="text-[#38BDF8] hover:underline font-medium underline-offset-2"
         >
           {anchorText}
         </a>
@@ -66,7 +69,13 @@ function renderFormattedText(text: string): React.ReactNode {
     parts.push(text.substring(lastIndex));
   }
 
-  return parts.length > 0 ? parts : text;
+  if (parts.length === 0) {
+    return text;
+  }
+
+  return parts.map((part, idx) =>
+    typeof part === 'string' ? <React.Fragment key={idx}>{part}</React.Fragment> : part
+  );
 }
 
 export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content }) => {
@@ -85,6 +94,15 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
 
   return (
     <section className="mt-16 pt-12 border-t border-[#1A202C] text-left w-full space-y-14" aria-label="Documentation and Guide">
+      {/* 0. Introductory Guide Lead (if present) */}
+      {content.intro && (
+        <div className="space-y-3 max-w-4xl pb-2">
+          <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+            {renderFormattedText(content.intro)}
+          </p>
+        </div>
+      )}
+
       {/* 1. What Is Section */}
       <div className="space-y-4">
         <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
@@ -117,10 +135,10 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
                   {step.stepNumber}
                 </div>
                 <h3 className="text-sm font-semibold text-white tracking-tight">
-                  {step.title}
+                  {renderFormattedText(step.title)}
                 </h3>
                 <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  {step.detail}
+                  {renderFormattedText(step.detail)}
                 </p>
               </div>
             </div>
@@ -136,7 +154,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
             <span>{content.example.heading}</span>
           </h2>
           <p className="text-sm text-slate-400 mt-1 max-w-3xl">
-            {content.example.description}
+            {renderFormattedText(content.example.description)}
           </p>
         </div>
 
@@ -190,7 +208,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
               <span>{content.errorReferenceTable.heading}</span>
             </h2>
             <p className="text-sm text-slate-400 mt-1 max-w-3xl">
-              {content.errorReferenceTable.description}
+              {renderFormattedText(content.errorReferenceTable.description)}
             </p>
           </div>
 
@@ -210,7 +228,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
                     <td className="py-3.5 px-4 font-semibold text-white">
                       {row.errorType}
                       <span className="block text-[11px] text-slate-400 font-normal mt-0.5 font-sans">
-                        {row.cause}
+                        {renderFormattedText(row.cause)}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 font-mono text-[11px]">
@@ -224,7 +242,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
                       </code>
                     </td>
                     <td className="py-3.5 px-4 text-xs text-slate-300 leading-relaxed font-sans">
-                      {row.explanation}
+                      {renderFormattedText(row.explanation)}
                     </td>
                   </tr>
                 ))}
@@ -271,7 +289,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
                 >
                   <Info className="w-4 h-4 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-semibold block mb-0.5">{sec.callout.title}</span>
+                    <span className="font-semibold block mb-0.5">{renderFormattedText(sec.callout.title)}</span>
                     <span className="text-slate-300">{renderFormattedText(sec.callout.text)}</span>
                   </div>
                 </div>
@@ -293,10 +311,10 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
               className="p-5 rounded-xl bg-[#121620] border border-[#1A202C] space-y-2"
             >
               <h3 className="text-sm font-semibold text-white">
-                {item.title}
+                {renderFormattedText(item.title)}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                {item.detail || item.description}
+                {renderFormattedText(item.detail || item.description || '')}
               </p>
             </div>
           ))}
@@ -386,7 +404,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ content })
                   {tool.name}
                 </h3>
                 <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  {tool.description}
+                  {renderFormattedText(tool.description)}
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-[#1A202C] flex items-center justify-between text-xs font-medium text-slate-400 group-hover:text-[#38BDF8]">
