@@ -44,7 +44,7 @@ export const ContactPage: React.FC = () => {
               <h2 className="text-lg font-bold text-white">Syntax & RFC Parsing Issues</h2>
               <p className="text-sm text-slate-300 leading-relaxed">
                 If our JSON Validator, JSONPath evaluator, or Schema engine produces an unexpected error
-                or fails on a legal RFC 8259 / RFC 9535 test case, please share:
+                or fails on a legal RFC 8259 or standard JSONPath test case, please share:
               </p>
               <ul className="text-xs text-slate-400 list-disc pl-5 space-y-1">
                 <li>A sanitized minimal reproducible JSON snippet (no private keys).</li>

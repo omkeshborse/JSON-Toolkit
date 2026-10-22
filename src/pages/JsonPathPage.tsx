@@ -148,9 +148,9 @@ export const JsonPathPage: React.FC<{ onShowToast: (msg: string, type?: 'success
 
         <ToolHeader
           title="JSONPath Query Evaluator"
-          description="Extract and query elements from JSON documents using standard RFC 9535 syntax."
+          description="Extract and query elements from JSON documents using standard JSONPath expressions with real-time match reporting."
           icon={Search}
-          badge="RFC 9535"
+          badge="Query Tool"
           actions={
             <>
               <button
@@ -219,7 +219,7 @@ export const JsonPathPage: React.FC<{ onShowToast: (msg: string, type?: 'success
         {showCheatSheet && (
           <div className="mb-4 p-4 rounded-xl bg-[#121620] border border-[#262D3D] text-xs">
             <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#1A202C]">
-              <span className="font-semibold text-white">JSONPath Syntax Reference (RFC 9535)</span>
+              <span className="font-semibold text-white">JSONPath Syntax Reference</span>
               <button
                 onClick={() => setShowCheatSheet(false)}
                 className="text-slate-400 hover:text-white"

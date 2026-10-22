@@ -44,7 +44,7 @@ export interface SchemaGeneratorOptions {
   includeRequired: boolean;
   detectFormats: boolean;
   detectEnums: boolean;
-  schemaDraft: 'draft-07' | '2020-12';
+  schemaDraft: 'draft-07';
   title?: string;
   description?: string;
 }

@@ -724,7 +724,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         {
           name: 'JSONPath Query Evaluator',
           path: '/jsonpath',
-          description: 'Extract specific items and filtered subsets from nested JSON using standard RFC 9535 expressions.'
+          description: 'Extract specific items and filtered subsets from nested JSON using standard JSONPath expressions.'
         },
         {
           name: 'JSON Formatter',
@@ -1110,9 +1110,9 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
       'query JSON',
       'JSONPath expression'
     ],
-    intro: 'JSONPath is a standardized query language (RFC 9535) for selecting and extracting specific values from JSON structures. Use this evaluator to test JSONPath queries interactively with real-time match highlighting, path reporting, and tabular views.',
+    intro: 'JSONPath is a query language for selecting and extracting specific values from JSON structures. Use this evaluator to test JSONPath queries interactively with real-time match highlighting, path reporting, and tabular views.',
     whatIs: {
-      heading: 'What Is JSONPath (RFC 9535)?',
+      heading: 'What Is JSONPath?',
       paragraphs: [
         'JSONPath is an expression language designed to query, navigate, and extract elements from JSON data structures, analogous to XPath in XML. Formally standardized by the IETF under RFC 9535, JSONPath enables developers to extract specific fields, traverse nested lists, and filter items based on expressions.',
         'A JSONPath expression begins with the root identifier symbol (`$`) followed by child property operators, recursive descent operators, array slices, or filter expressions. It is widely adopted across workflow automation tools, API test frameworks (e.g., Postman, RestAssured), and data ingestion pipelines. To inspect object structures and copy path chains interactively before authoring queries, explore your document in our [JSON Tree Viewer](/json-viewer).'
@@ -1174,7 +1174,7 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
     },
     detailedSections: [
       {
-        heading: 'RFC 9535 Syntax Reference: Selectors, Wildcards & Slices',
+        heading: 'JSONPath Syntax Reference: Selectors, Wildcards & Slices',
         badge: 'Query Language Standard',
         paragraphs: [
           'JSONPath was standardized under IETF RFC 9535 to provide a consistent, cross-platform query syntax for JSON data models across languages and tools.',
@@ -1192,18 +1192,18 @@ export const SEO_DATA_BY_PATH: Record<string, ToolSeoData> = {
         badge: 'Advanced Querying',
         paragraphs: [
           'Filter expressions allow dynamic querying based on property values rather than static array positions. A filter is written inside brackets as `[?(expression)]`, where `@` represents the current item being evaluated.',
-          'RFC 9535 supports standard comparison operators (`==`, `!=`, `<`, `<=`, `>`, `>=`) and logical operators (`&&`, `||`, `!`). For instance, `$.orders[?(@.total > 100 && @.status == "delivered")]` filters an orders collection down to large delivered shipments.',
+          'JSONPath supports standard comparison operators (`==`, `!=`, `<`, `<=`, `>`, `>=`) and logical operators (`&&`, `||`, `!`). For instance, `$.orders[?(@.total > 100 && @.status == "delivered")]` filters an orders collection down to large delivered shipments.',
           'Once you have extracted and verified your desired data, you can format the output using our [JSON Formatter](/json-formatter), or validate the schema of your source payload using our [JSON Schema Validator](/json-schema).'
         ],
         callout: {
           type: 'tip',
           title: 'CI/CD and Automation Pipelines',
-          text: 'RFC 9535 JSONPath expressions are directly usable in GitHub Actions step outputs, Kubernetes kubectl JSONPath output flags, AWS Step Functions data paths, and Postman response tests.'
+          text: 'Standard JSONPath expressions are directly usable in GitHub Actions step outputs, Kubernetes kubectl JSONPath output flags, AWS Step Functions data paths, and Postman response tests.'
         }
       }
     ],
     useCases: {
-      heading: 'Supported JSONPath Syntax (RFC 9535)',
+      heading: 'Supported JSONPath Syntax',
       items: [
         {
           title: '$ (Root Object Selector)',

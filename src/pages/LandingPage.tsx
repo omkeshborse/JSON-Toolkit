@@ -283,7 +283,7 @@ export const LandingPage: React.FC = () => {
               </div>
               <h3 className="text-base font-bold text-white">Standard Compliant</h3>
               <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                Strict adherence to RFC 8259 (JSON Grammar), RFC 9535 (JSONPath specification), and JSON Schema Draft-07 standards.
+                Strict adherence to RFC 8259 (JSON Grammar), standard JSONPath query syntax, and JSON Schema Draft-07 standards.
               </p>
             </div>
           </div>

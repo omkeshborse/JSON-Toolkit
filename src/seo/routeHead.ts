@@ -177,7 +177,7 @@ export function getRouteHead(path: string): RouteHeadData {
   if (path === '/about') {
     const title = `About | ${SITE_NAME}`;
     const description =
-      'Learn about 101 JSON Toolkit: our client-side architecture, open standards adherence (RFC 8259, RFC 9535), and zero-telemetry developer utilities.';
+      'Learn about 101 JSON Toolkit: our client-side architecture, open standards adherence (RFC 8259, JSON Schema Draft-07), and zero-telemetry developer utilities.';
     const h1 = 'About 101 JSON Toolkit';
     const jsonLd = {
       '@context': 'https://schema.org',

@@ -154,7 +154,7 @@ export const JsonSchemaView: React.FC<JsonSchemaViewProps> = ({
         <div className="flex items-center justify-between px-3.5 py-2.5 bg-slate-900/80 border-b border-slate-800 text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
-            <span className="font-semibold text-slate-200">JSON Schema (Draft-07 / 2020-12)</span>
+            <span className="font-semibold text-slate-200">JSON Schema (Draft-07)</span>
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -242,7 +242,7 @@ export const JsonSchemaView: React.FC<JsonSchemaViewProps> = ({
             <select
               value={schemaOptions.schemaDraft}
               onChange={(e) => {
-                const draft = e.target.value as 'draft-07' | '2020-12';
+                const draft = e.target.value as 'draft-07';
                 const opts = { ...schemaOptions, schemaDraft: draft };
                 setSchemaOptions(opts);
                 if (isValidJson && parsedJson) {
@@ -252,7 +252,6 @@ export const JsonSchemaView: React.FC<JsonSchemaViewProps> = ({
               className="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-slate-300 focus:outline-none"
             >
               <option value="draft-07">Draft-07</option>
-              <option value="2020-12">2020-12</option>
             </select>
           </div>
         </div>

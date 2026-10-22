@@ -102,7 +102,7 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li className="pt-2 text-[11px] text-slate-500 font-mono">
-                Adheres to RFC 8259 & RFC 9535
+                Adheres to RFC 8259 Specifications
               </li>
             </ul>
           </div>

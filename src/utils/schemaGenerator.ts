@@ -11,10 +11,7 @@ export function generateJsonSchema(
     description: 'Schema generated automatically by JSON Toolkit',
   }
 ): Record<string, any> {
-  const schemaDraftUrl =
-    options.schemaDraft === '2020-12'
-      ? 'https://json-schema.org/draft/2020-12/schema'
-      : 'http://json-schema.org/draft-07/schema#';
+  const schemaDraftUrl = 'http://json-schema.org/draft-07/schema#';
 
   const rootSchema: Record<string, any> = {
     $schema: schemaDraftUrl,
