@@ -27,7 +27,7 @@ export const GuidesIndexPage: React.FC = () => {
       <header className="mb-12 pb-8 border-b border-[#1A202C] space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121620] border border-[#262D3D] text-[#38BDF8] text-xs font-mono">
           <BookOpen className="w-3.5 h-3.5" />
-          <span>Product-Led Engineering Tutorials</span>
+          <span>In-Depth Engineering Tutorials</span>
         </div>
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
           Technical JSON Guides & Tutorials

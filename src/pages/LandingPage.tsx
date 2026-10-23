@@ -264,7 +264,7 @@ export const LandingPage: React.FC = () => {
                 <span>Technical Tutorials</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                Product-Led Developer Guides
+                Technical JSON Guides & Deep Dives
               </h2>
               <p className="text-sm text-slate-400 mt-1 max-w-xl">
                 Practical, RFC-verified guides for diagnosing parse errors, comparing structural diffs, and evaluating JSONPath queries.
