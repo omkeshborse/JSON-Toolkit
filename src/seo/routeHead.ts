@@ -1,5 +1,6 @@
 import { SITE_URL, SITE_NAME, OG_IMAGE } from '../siteConfig';
 import { SEO_DATA_BY_PATH, ToolSeoData } from '../data/seoContent';
+import { GUIDES_DATA } from '../data/guidesContent';
 
 export interface RouteHeadData {
   path: string;
@@ -34,6 +35,10 @@ export const KNOWN_ROUTES = [
   '/about',
   '/privacy',
   '/contact',
+  '/guides',
+  '/guides/how-to-fix-common-json-syntax-errors',
+  '/guides/how-to-compare-json-objects-differing-key-order',
+  '/guides/jsonpath-examples-querying-nested-api-responses',
 ] as const;
 
 export type KnownRoute = (typeof KNOWN_ROUTES)[number];
@@ -304,6 +309,113 @@ export function getRouteHead(path: string): RouteHeadData {
       twitterImage: OG_IMAGE,
       jsonLd,
     };
+  }
+
+  // Developer Guides Index (/guides)
+  if (path === '/guides') {
+    const title = `Technical JSON Guides & Developer Tutorials | ${SITE_NAME}`;
+    const description =
+      'In-depth technical guides for debugging JSON syntax errors, comparing JSON objects independent of key order, and querying API responses with JSONPath.';
+    const h1 = 'Technical JSON Guides & Tutorials';
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'CollectionPage',
+          name: title,
+          url: canonicalUrl,
+          description,
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+            { '@type': 'ListItem', position: 2, name: 'Guides', item: canonicalUrl },
+          ],
+        },
+      ],
+    };
+    return {
+      path,
+      slug: 'guides',
+      title,
+      description,
+      canonical: canonicalUrl,
+      robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      h1,
+      ogType: 'website',
+      ogTitle: title,
+      ogDescription: description,
+      ogUrl: canonicalUrl,
+      ogImage: OG_IMAGE,
+      twitterCard: 'summary_large_image',
+      twitterTitle: title,
+      twitterDescription: description,
+      twitterImage: OG_IMAGE,
+      jsonLd,
+    };
+  }
+
+  // Individual Technical Guide Pages (/guides/:slug)
+  if (path.startsWith('/guides/')) {
+    const guideSlug = path.replace(/^\/guides\//, '');
+    const guide = GUIDES_DATA[guideSlug];
+    if (guide) {
+      const title = `${guide.seoTitle} | ${SITE_NAME}`;
+      const description = guide.metaDescription;
+      const h1 = guide.h1;
+      const jsonLd = {
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'TechArticle',
+            headline: guide.h1,
+            name: guide.seoTitle,
+            description: guide.metaDescription,
+            url: canonicalUrl,
+            inLanguage: 'en-US',
+            datePublished: guide.datePublished,
+            dateModified: guide.dateModified,
+            about: [
+              { '@type': 'Thing', name: 'JSON' },
+              { '@type': 'Thing', name: guide.primaryKeyword },
+            ],
+            publisher: {
+              '@type': 'Organization',
+              name: SITE_NAME,
+              url: SITE_URL,
+            },
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+              { '@type': 'ListItem', position: 2, name: 'Guides', item: `${SITE_URL}/guides` },
+              { '@type': 'ListItem', position: 3, name: guide.h1, item: canonicalUrl },
+            ],
+          },
+        ],
+      };
+      return {
+        path,
+        slug: guideSlug,
+        title,
+        description,
+        canonical: canonicalUrl,
+        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+        h1,
+        ogType: 'article',
+        ogTitle: title,
+        ogDescription: description,
+        ogUrl: canonicalUrl,
+        ogImage: OG_IMAGE,
+        twitterCard: 'summary_large_image',
+        twitterTitle: title,
+        twitterDescription: description,
+        twitterImage: OG_IMAGE,
+        jsonLd,
+      };
+    }
   }
 
   // 404 Route Head: NO canonical, noindex

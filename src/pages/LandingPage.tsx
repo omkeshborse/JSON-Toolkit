@@ -15,6 +15,7 @@ import {
   Code2,
   Copy,
   Check,
+  BookOpen,
 } from 'lucide-react';
 
 const PREVIEW_SAMPLE = `{
@@ -249,6 +250,98 @@ export const LandingPage: React.FC = () => {
                 </Link>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Developer Guides & Tutorials Preview Section */}
+      <section className="py-16 border-t border-[#1A202C] bg-[#0B0D13]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 text-left">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121620] border border-[#262D3D] text-[#38BDF8] text-xs font-mono mb-2">
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Technical Tutorials</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Product-Led Developer Guides
+              </h2>
+              <p className="text-sm text-slate-400 mt-1 max-w-xl">
+                Practical, RFC-verified guides for diagnosing parse errors, comparing structural diffs, and evaluating JSONPath queries.
+              </p>
+            </div>
+            <Link
+              to="/guides"
+              className="text-xs sm:text-sm font-semibold text-[#38BDF8] hover:text-white flex items-center gap-1.5 transition-colors"
+            >
+              <span>View All Technical Guides</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+            <Link
+              to="/guides/how-to-fix-common-json-syntax-errors"
+              className="group p-5 rounded-2xl bg-[#121620] border border-[#1A202C] hover:border-[#38BDF8]/40 transition flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <span className="text-[10px] font-mono text-[#38BDF8] bg-[#38BDF8]/10 px-2 py-0.5 rounded border border-[#38BDF8]/20">
+                  RFC 8259 Repair
+                </span>
+                <h3 className="text-base font-bold text-white group-hover:text-[#38BDF8] transition-colors">
+                  How to Fix Common JSON Syntax Errors
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Learn how to fix json syntax errors, trailing commas, unquoted keys, single quotes, and position 0 tokens.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#1A202C] flex items-center justify-between text-xs font-medium text-slate-400 group-hover:text-[#38BDF8]">
+                <span>Read Tutorial</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            <Link
+              to="/guides/how-to-compare-json-objects-differing-key-order"
+              className="group p-5 rounded-2xl bg-[#121620] border border-[#1A202C] hover:border-[#38BDF8]/40 transition flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <span className="text-[10px] font-mono text-[#38BDF8] bg-[#38BDF8]/10 px-2 py-0.5 rounded border border-[#38BDF8]/20">
+                  Semantic Diffing
+                </span>
+                <h3 className="text-base font-bold text-white group-hover:text-[#38BDF8] transition-colors">
+                  How to Compare JSON Objects When Key Order Differs
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Compare json objects ignore key order using recursive sorting, semantic diff tools, and bash jq commands.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#1A202C] flex items-center justify-between text-xs font-medium text-slate-400 group-hover:text-[#38BDF8]">
+                <span>Read Tutorial</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            <Link
+              to="/guides/jsonpath-examples-querying-nested-api-responses"
+              className="group p-5 rounded-2xl bg-[#121620] border border-[#1A202C] hover:border-[#38BDF8]/40 transition flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <span className="text-[10px] font-mono text-[#38BDF8] bg-[#38BDF8]/10 px-2 py-0.5 rounded border border-[#38BDF8]/20">
+                  JSONPath Queries
+                </span>
+                <h3 className="text-base font-bold text-white group-hover:text-[#38BDF8] transition-colors">
+                  JSONPath Examples for Querying Nested API Responses
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Practical jsonpath examples for api responses: boolean and numeric filters, recursive descent, and array slicing.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#1A202C] flex items-center justify-between text-xs font-medium text-slate-400 group-hover:text-[#38BDF8]">
+                <span>Read Tutorial</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
           </div>
         </div>
       </section>

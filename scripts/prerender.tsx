@@ -91,15 +91,20 @@ function prerender(): void {
 
     const filename = route === '/' ? 'index.html' : `${route.slice(1)}.html`;
     const targetPath = path.resolve(distDir, filename);
+    const targetDir = path.dirname(targetPath);
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
 
     fs.writeFileSync(targetPath, pageHtml, 'utf-8');
     console.log(`  ✓ Generated: dist/${filename}`);
 
     const loc = route === '/' ? `${SITE_URL}/` : `${SITE_URL}${route}`;
     const isTrustPage = ['/about', '/privacy', '/contact'].includes(route);
+    const isGuide = route === '/guides' || route.startsWith('/guides/');
     sitemapUrls.push({
       loc,
-      priority: route === '/' ? '1.0' : isTrustPage ? '0.5' : '0.9',
+      priority: route === '/' ? '1.0' : isTrustPage ? '0.5' : isGuide ? '0.8' : '0.9',
       changefreq: route === '/' ? 'weekly' : isTrustPage ? 'monthly' : 'weekly',
     });
 

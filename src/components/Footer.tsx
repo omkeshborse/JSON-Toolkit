@@ -97,6 +97,11 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/guides" className="text-slate-400 hover:text-[#38BDF8] transition-colors">
+                  Technical Guides
+                </Link>
+              </li>
+              <li>
                 <Link to="/contact" className="text-slate-400 hover:text-[#38BDF8] transition-colors">
                   Contact & Feedback
                 </Link>
@@ -111,6 +116,10 @@ export const Footer: React.FC = () => {
         <div className="pt-8 mt-8 border-t border-[#1A202C] flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
           <p>© {new Date().getFullYear()} JSON Toolkit. All utilities run locally in your web browser.</p>
           <div className="flex flex-wrap items-center gap-3 mt-4 sm:mt-0">
+            <Link to="/guides" className="hover:text-slate-300">
+              Guides
+            </Link>
+            <span>•</span>
             <Link to="/about" className="hover:text-slate-300">
               About
             </Link>

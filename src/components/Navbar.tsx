@@ -8,6 +8,7 @@ import {
   GitCompare,
   Search,
   FileCode2,
+  BookOpen,
   Menu,
   X,
 } from 'lucide-react';
@@ -65,6 +66,19 @@ export const Navbar: React.FC = () => {
               </Link>
             );
           })}
+          <div className="h-4 w-px bg-[#1A202C] mx-1" />
+          <Link
+            to="/guides"
+            title="Technical JSON Guides & Tutorials"
+            className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors ${
+              path.startsWith('/guides')
+                ? 'bg-[#121620] text-[#38BDF8] border border-[#262D3D]'
+                : 'text-slate-300 hover:text-white hover:bg-[#121620]/60'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5 text-[#38BDF8]" />
+            <span>Guides</span>
+          </Link>
         </nav>
 
         {/* Mobile menu button */}
@@ -105,6 +119,20 @@ export const Navbar: React.FC = () => {
                 </Link>
               );
             })}
+          </div>
+          <div className="pt-2 border-t border-[#1A202C]">
+            <Link
+              to="/guides"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-2 p-2 rounded text-xs font-medium ${
+                path.startsWith('/guides')
+                  ? 'bg-[#121620] text-[#38BDF8] border border-[#262D3D]'
+                  : 'text-slate-300 hover:bg-[#121620]'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-[#38BDF8]" />
+              <span>Technical Guides & Tutorials</span>
+            </Link>
           </div>
         </div>
       )}

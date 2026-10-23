@@ -8,6 +8,9 @@ import { NotFoundPage } from '../pages/NotFoundPage';
 import { AboutPage } from '../pages/AboutPage';
 import { PrivacyPage } from '../pages/PrivacyPage';
 import { ContactPage } from '../pages/ContactPage';
+import { GuidesIndexPage } from '../pages/GuidesIndexPage';
+import { GuideDetailPage } from '../pages/GuideDetailPage';
+import { GUIDES_DATA } from '../data/guidesContent';
 import { RouterProvider } from '../router';
 
 interface StaticPageProps {
@@ -37,6 +40,10 @@ export const StaticPage: React.FC<StaticPageProps> = ({ routeHead }) => {
             <PrivacyPage />
           ) : path === '/contact' ? (
             <ContactPage />
+          ) : path === '/guides' ? (
+            <GuidesIndexPage />
+          ) : path.startsWith('/guides/') && GUIDES_DATA[path.replace(/^\/guides\//, '')] ? (
+            <GuideDetailPage guide={GUIDES_DATA[path.replace(/^\/guides\//, '')]} />
           ) : path === '404' || !seoContent ? (
             <NotFoundPage />
           ) : (

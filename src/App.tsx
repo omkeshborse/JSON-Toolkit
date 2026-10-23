@@ -21,6 +21,9 @@ const AboutPage = lazy(() => import('./pages/AboutPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const GuidesIndexPage = lazy(() => import('./pages/GuidesIndexPage'));
+const GuideDetailPage = lazy(() => import('./pages/GuideDetailPage'));
+import { GUIDES_DATA } from './data/guidesContent';
 
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import { applyRouteHead } from './seo/applyHead';
@@ -107,7 +110,16 @@ function AppContent() {
               return <PrivacyPage />;
             case '/contact':
               return <ContactPage />;
+            case '/guides':
+              return <GuidesIndexPage />;
             default:
+              if (path.startsWith('/guides/')) {
+                const slug = path.replace('/guides/', '');
+                const guide = GUIDES_DATA[slug];
+                if (guide) {
+                  return <GuideDetailPage guide={guide} />;
+                }
+              }
               return <NotFoundPage />;
           }
         })()}
